@@ -37,5 +37,5 @@ yarn-error.log*
 supabase/.temp/
 
 CLAUDE.md
-aura-concept.md
 aura-technical-spec.md
+aura-concept.md
