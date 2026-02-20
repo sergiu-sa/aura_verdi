@@ -1,16 +1,18 @@
 import type { Metadata } from 'next'
+import { ChatContainer } from '@/components/chat/chat-container'
 
 export const metadata: Metadata = { title: 'Chat with Aura' }
 
+/**
+ * Chat page — full-height layout to make the most of the screen.
+ * ChatContainer handles all state and streaming logic.
+ */
 export default function ChatPage() {
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto animate-fade-in">
-      <p className="text-section-header mb-2">Assistant</p>
-      <h1 className="font-display text-4xl text-aura-text mb-4">Chat with Aura</h1>
-      <p className="text-aura-text-secondary text-sm leading-relaxed max-w-md">
-        The AI chat interface — where you ask questions, get financial guidance, and talk through
-        money decisions with Aura — is being built in Step 5.
-      </p>
+    // h-[calc(100vh-...)] accounts for mobile top bar (56px) + bottom nav (68px)
+    // On desktop, it's just full height minus any headers
+    <div className="h-[calc(100dvh-56px-68px)] md:h-screen flex flex-col">
+      <ChatContainer />
     </div>
   )
 }
