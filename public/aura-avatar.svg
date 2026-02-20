@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Aura avatar: a minimal "A" shape with a soft teal glow ring -->
+  <circle cx="24" cy="24" r="22" fill="#1C1C28" stroke="#0D7377" stroke-width="1.5" opacity="0.9"/>
+  <!-- Inner glow ring -->
+  <circle cx="24" cy="24" r="18" fill="none" stroke="#0D7377" stroke-width="0.5" opacity="0.4"/>
+  <!-- Stylized A letterform -->
+  <path
+    d="M24 10 L36 38 H30 L27.5 31.5 H20.5 L18 38 H12 L24 10Z M22 27 H26 L24 21 L22 27Z"
+    fill="#0D7377"
+    fill-rule="evenodd"
+  />
+</svg>

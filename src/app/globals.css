@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   AURA — Global Styles
+   Dark mode is the DEFAULT. Aura's palette is applied directly as CSS vars.
+   shadcn/ui components read from these CSS variables.
+───────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    /* ── Light mode (secondary — rarely used) ── */
+    --background: 240 15% 97%;
+    --foreground: 240 15% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 15% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 15% 8%;
+    --primary: 182 80% 25%;      /* Aura teal */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 10% 90%;
+    --secondary-foreground: 240 15% 20%;
+    --muted: 240 10% 92%;
+    --muted-foreground: 240 10% 45%;
+    --accent: 182 60% 30%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 10% 88%;
+    --input: 240 10% 88%;
+    --ring: 182 80% 25%;
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    /* ── Dark mode — PRIMARY design ── */
+    /* Background: #121218 */
+    --background: 240 15% 7%;
+    /* Text: #E8E8EC */
+    --foreground: 240 5% 92%;
+    /* Card surface: #1C1C28 */
+    --card: 240 20% 13%;
+    --card-foreground: 240 5% 92%;
+    /* Popover / dropdown: #24243A */
+    --popover: 240 25% 18%;
+    --popover-foreground: 240 5% 92%;
+    /* Teal primary: #0D7377 */
+    --primary: 182 80% 25%;
+    --primary-foreground: 0 0% 98%;
+    /* Secondary surface */
+    --secondary: 240 20% 18%;
+    --secondary-foreground: 240 5% 80%;
+    /* Muted text and backgrounds */
+    --muted: 240 20% 16%;
+    --muted-foreground: 240 8% 55%;
+    /* Accent (slightly lighter teal) */
+    --accent: 182 60% 30%;
+    --accent-foreground: 0 0% 98%;
+    /* Danger: #C75050 */
+    --destructive: 0 55% 55%;
+    --destructive-foreground: 0 0% 98%;
+    /* Borders: #2A2A3E */
+    --border: 240 20% 20%;
+    --input: 240 20% 18%;
+    --ring: 182 80% 25%;
+    --radius: 0.625rem;
+  }
+
+  /* Apply dark mode by default */
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-aura-background text-aura-text antialiased;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  /* Consistent border color via CSS variable */
+  * {
+    @apply border-border;
+  }
+
+  /* Smooth scrolling for the whole app */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar — subtle, matching Aura's palette */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  /* Focus rings — use Aura teal */
+  :focus-visible {
+    outline: 2px solid theme('colors.aura.primary');
+    outline-offset: 2px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Typography helpers
+───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Large financial number display (e.g., safe-to-spend amount) */
+  .text-financial-display {
+    @apply font-display text-4xl font-normal tracking-tight text-aura-text;
+  }
+
+  /* Section headers */
+  .text-section-header {
+    @apply font-sans text-xs font-semibold uppercase tracking-widest text-aura-text-secondary;
+  }
+
+  /* Monospaced amount display */
+  .text-amount {
+    @apply font-mono text-aura-text tabular-nums;
+  }
+
+  /* Subtle card/panel surface */
+  .surface {
+    @apply bg-aura-surface border border-aura-border rounded-lg;
+  }
+
+  /* Higher elevation surface (dialogs, modals) */
+  .surface-elevated {
+    @apply bg-aura-surface-high border border-aura-border rounded-xl shadow-2xl;
+  }
+
+  /* Animation delay utilities for staggered reveals */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+}
