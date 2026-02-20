@@ -133,7 +133,16 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // iOS safe area support for mobile bottom nav
+    function ({ addUtilities }: { addUtilities: (u: Record<string, Record<string, string>>) => void }) {
+      addUtilities({
+        '.pb-safe': { paddingBottom: 'env(safe-area-inset-bottom, 0px)' },
+        '.pt-safe': { paddingTop: 'env(safe-area-inset-top, 0px)' },
+      })
+    },
+  ],
 };
 
 export default config;
