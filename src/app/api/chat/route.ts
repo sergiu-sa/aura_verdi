@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     // 8. STREAM from Claude API
     // System = Aura personality + live financial context (no PII)
     const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1500,
       system: `${AURA_SYSTEM_PROMPT}\n\n${financialContext}`,
       messages: claudeMessages,
@@ -113,7 +113,12 @@ export async function POST(request: Request) {
           }
           controller.close()
         } catch (err) {
-          controller.error(err)
+          // Send a readable error message through the stream rather than
+          // erroring the stream (which shows "Connection lost" on the client)
+          console.error(`[CHAT] Stream error for user ${user.id}:`, err instanceof Error ? err.message : 'Unknown')
+          const errText = 'Sorry, I ran into a problem generating a response. Please try again.'
+          controller.enqueue(encoder.encode(errText))
+          controller.close()
           return
         }
 

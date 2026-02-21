@@ -30,7 +30,8 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://*.supabase.co",
               // Supabase, Anthropic API, Neonomics sandbox
-              "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://sandbox.neonomics.io wss://*.supabase.co",
+              // ws://localhost:* is needed for Next.js HMR in development
+              "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://sandbox.neonomics.io wss://*.supabase.co ws://localhost:* wss://localhost:*",
               "frame-ancestors 'none'",
             ].join("; "),
           },

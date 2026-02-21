@@ -1,6 +1,23 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+
+/**
+ * UUID generator that works in both SSR (Node.js) and browser contexts.
+ * generateId() is available in Node 19+ and modern browsers,
+ * but the global may not be wired up the same way in all SSR environments.
+ */
+function generateId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+  // RFC 4122 v4 UUID fallback — safe for all environments
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
 import { MessageBubble } from './message-bubble'
 import { ChatInput } from './chat-input'
 import { QuickActions } from './quick-actions'
@@ -33,7 +50,7 @@ export function ChatContainer() {
   const [isStreaming, setIsStreaming] = useState(false)
 
   // Stable conversation ID for this session
-  const conversationIdRef = useRef(crypto.randomUUID())
+  const conversationIdRef = useRef(generateId())
   // Scroll anchor — always scroll to the bottom after new messages
   const bottomRef = useRef<HTMLDivElement>(null)
   // Track whether there's been any real interaction (to hide quick actions)
@@ -51,9 +68,9 @@ export function ChatContainer() {
     setInput('')
 
     // Add user message to UI immediately
-    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text }
+    const userMsg: Message = { id: generateId(), role: 'user', content: text }
     // Add empty assistant message as placeholder (will be filled by stream)
-    const assistantMsgId = crypto.randomUUID()
+    const assistantMsgId = generateId()
     const assistantMsg: Message = { id: assistantMsgId, role: 'assistant', content: '' }
 
     setMessages((prev) => [...prev, userMsg, assistantMsg])
