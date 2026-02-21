@@ -66,6 +66,7 @@ export type Database = {
           id: string
           user_id: string
           bank_connection_id: string
+          neonomics_account_id: string | null
           account_name: string | null
           iban: string | null
           balance: number
