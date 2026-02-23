@@ -15,6 +15,7 @@ import {
   LogOut,
   type LucideIcon,
 } from 'lucide-react'
+import { NotificationBell } from './notification-bell'
 
 interface NavItem {
   label: string
@@ -60,19 +61,23 @@ const NAV_ITEMS: NavItem[] = [
 interface SidebarProps {
   userDisplayName: string
   userEmail: string
+  userId: string
 }
 
-export function Sidebar({ userDisplayName, userEmail }: SidebarProps) {
+export function Sidebar({ userDisplayName, userEmail, userId }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex w-60 flex-col border-r border-aura-border bg-aura-surface shrink-0 h-screen sticky top-0">
+    <aside className="hidden md:flex w-60 flex-col border-r border-aura-border bg-aura-surface shrink-0 h-screen sticky top-0 z-40">
 
-      {/* ── Logo ─────────────────────────────────────────────────── */}
+      {/* ── Logo + bell ──────────────────────────────────────────── */}
       <div className="px-5 py-5 border-b border-aura-border">
-        <div className="flex items-center gap-3">
-          <AuraLogo />
-          <span className="font-display text-xl text-aura-text tracking-tight">Aura</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AuraLogo />
+            <span className="font-display text-xl text-aura-text tracking-tight">Aura</span>
+          </div>
+          <NotificationBell userId={userId} align="left" />
         </div>
       </div>
 

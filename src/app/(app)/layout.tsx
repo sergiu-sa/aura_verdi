@@ -38,13 +38,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-aura-background">
 
       {/* Desktop sidebar — hidden on mobile */}
-      <Sidebar userDisplayName={displayName} userEmail={email} />
+      <Sidebar userDisplayName={displayName} userEmail={email} userId={user.id} />
 
       {/* Main content column */}
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Mobile top bar — hidden on desktop */}
-        <TopNav userDisplayName={displayName} />
+        <TopNav userDisplayName={displayName} userId={user.id} />
 
         {/* Page content */}
         <main className="flex-1 overflow-auto pb-20 md:pb-0">

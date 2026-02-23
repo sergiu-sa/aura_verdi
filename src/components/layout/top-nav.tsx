@@ -1,18 +1,20 @@
 import { signOut } from '@/app/(auth)/actions'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
+import { NotificationBell } from './notification-bell'
 import { LogOut } from 'lucide-react'
 
 interface TopNavProps {
   userDisplayName: string
+  userId: string
 }
 
 /**
  * Mobile-only top navigation bar.
- * Shows Aura logo, user avatar, and sign-out button.
+ * Shows Aura logo, notification bell, user avatar, and sign-out button.
  * Hidden on md+ screens (desktop uses the sidebar instead).
  */
-export function TopNav({ userDisplayName }: TopNavProps) {
+export function TopNav({ userDisplayName, userId }: TopNavProps) {
   return (
     <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-aura-border bg-aura-surface/95 backdrop-blur-md">
       {/* Aura wordmark */}
@@ -27,8 +29,9 @@ export function TopNav({ userDisplayName }: TopNavProps) {
         <span className="font-display text-xl text-aura-text tracking-tight">Aura</span>
       </div>
 
-      {/* Right: avatar + sign out */}
-      <div className="flex items-center gap-2">
+      {/* Right: bell + avatar + sign out */}
+      <div className="flex items-center gap-1">
+        <NotificationBell userId={userId} />
         <Avatar name={userDisplayName} size="sm" />
         <form action={signOut}>
           <Button
