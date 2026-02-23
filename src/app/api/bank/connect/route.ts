@@ -18,19 +18,16 @@ import { createClient } from '@/lib/supabase/server'
 import { neonomics } from '@/lib/neonomics/client'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { NORWEGIAN_BANKS } from '@/lib/constants/norwegian-banks'
 
 // ── Input validation ─────────────────────────────────────────────────────────
+// Bank IDs from Neonomics are base64-encoded strings (e.g. "RG5iLm5vLnYxRE5CQU5PS0s=").
+// We no longer validate against a hardcoded list — Neonomics will reject unknown IDs
+// directly, and the hardcoded list would require constant maintenance as banks change.
 
 const ConnectSchema = z.object({
-  bankId: z
-    .string()
-    .min(1)
-    .max(100)
-    .refine(
-      (id) => NORWEGIAN_BANKS.some((b) => b.id === id),
-      { message: 'Unrecognized bank ID' }
-    ),
+  bankId: z.string().min(1).max(200),
+  /** Human-readable bank name from the /api/bank/list response */
+  bankName: z.string().min(1).max(100).optional(),
 })
 
 // ── POST /api/bank/connect ───────────────────────────────────────────────────
@@ -63,25 +60,26 @@ export async function POST(request: Request) {
     )
   }
 
-  const { bankId } = parsed.data
+  const { bankId, bankName: clientBankName } = parsed.data
 
-  // 3. FIND BANK NAME for display
-  const bank = NORWEGIAN_BANKS.find((b) => b.id === bankId)
-  const bankName = bank?.name ?? bankId
+  // 3. Use the name sent by the client (from /api/bank/list), fall back to bankId
+  const bankName = clientBankName ?? bankId
 
   try {
     // 4. We use the user's UUID as the device ID — stable and unique per user
     const deviceId = user.id
 
-    // 5. Build the callback URL — we embed the sessionId later (after we have it)
-    //    Neonomics will redirect here after BankID authentication.
+    // 5. Build the callback URL from NEXT_PUBLIC_APP_URL.
+    //    This automatically resolves to the right URL in every environment:
+    //    - Dev:        http://localhost:3000/api/bank/callback
+    //    - Production: https://your-domain.com/api/bank/callback  (set NEXT_PUBLIC_APP_URL in Vercel)
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const baseCallbackUrl = `${appUrl}/api/bank/callback`
+    const redirectUri = `${appUrl}/api/bank/callback`
 
-    // 6. Create a Neonomics session for this bank
+    // 6. Create a Neonomics session for this bank.
     let session
     try {
-      session = await neonomics.createSession(bankId, deviceId, baseCallbackUrl)
+      session = await neonomics.createSession(bankId, deviceId)
     } catch (err) {
       console.error(`[BANK_CONNECT] Session creation failed for user ${user.id}:`, err instanceof Error ? err.message : 'Unknown')
       return NextResponse.json(
@@ -92,11 +90,11 @@ export async function POST(request: Request) {
 
     const sessionId = session.sessionId
 
-    // 7. Get the consent (SCA redirect) URL from Neonomics
-    //    This is the URL we send the user to for BankID authentication.
+    // 7. Get the consent (SCA redirect) URL, passing our callback URL so
+    //    Neonomics knows where to send the user after BankID authentication.
     let consent
     try {
-      consent = await neonomics.getConsent(sessionId, deviceId)
+      consent = await neonomics.getConsent(sessionId, deviceId, redirectUri)
     } catch (err) {
       console.error(`[BANK_CONNECT] Consent fetch failed for user ${user.id}:`, err instanceof Error ? err.message : 'Unknown')
       return NextResponse.json(
@@ -133,15 +131,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // 9. Return the redirect URL to the client.
-    //    We also include our sessionId as a query param on the Neonomics URL
-    //    so the callback can identify which connection to activate.
-    //    (Neonomics may or may not include sessionId in their callback params.)
-    const redirectUrl = new URL(scaRedirectUrl)
-    redirectUrl.searchParams.set('state', sessionId)
-
+    // 9. Return the redirect URL to the client unchanged.
+    //    Do NOT modify the scaRedirect URL — it may be signed and adding
+    //    query params would break it.
+    //    The callback identifies the session via the sessionId Neonomics
+    //    includes in its redirect back, or falls back to the most recent
+    //    pending connection for this user.
     return NextResponse.json({
-      redirectUrl: redirectUrl.toString(),
+      redirectUrl: scaRedirectUrl,
       sessionId,
     })
   } catch (error) {

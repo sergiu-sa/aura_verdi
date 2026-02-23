@@ -144,27 +144,31 @@ export const neonomics = {
    * Create a new Neonomics session for a specific bank.
    * Returns a session object containing the sessionId.
    *
-   * @param bankId     - The Neonomics bank identifier (e.g., "dnb-no")
-   * @param deviceId   - Stable UUID for the user (we use user.id)
-   * @param redirectUri - Where Neonomics redirects after BankID authentication
+   * NOTE: The redirect URI is configured in the Neonomics developer portal,
+   * not passed per-request. The body only needs { bankId }.
+   *
+   * @param bankId   - The Neonomics bank identifier (e.g., "dnb-no")
+   * @param deviceId - Stable UUID for the user (we use user.id)
    */
-  createSession(bankId: string, deviceId: string, redirectUri: string) {
+  createSession(bankId: string, deviceId: string) {
     return neonomicsRequest<NeonomicsSession>('/ics/v3/sessions', {
       method: 'POST',
       deviceId,
-      body: { bankId, redirectUri },
+      body: { bankId },
     })
   },
 
   /**
    * Get the consent redirect URL for a session.
    * The `scaRedirect` link is where we send the user to authenticate.
+   *
+   * @param redirectUri - Where Neonomics sends the user back after BankID auth.
+   *   Built from NEXT_PUBLIC_APP_URL so it works in both dev and production
+   *   without any code changes.
    */
-  getConsent(sessionId: string, deviceId: string) {
-    return neonomicsRequest<NeonomicsConsentResponse>(
-      `/ics/v3/consent/${sessionId}`,
-      { deviceId, sessionId }
-    )
+  getConsent(sessionId: string, deviceId: string, redirectUri: string) {
+    const path = `/ics/v3/consent/${sessionId}?redirect_uri=${encodeURIComponent(redirectUri)}`
+    return neonomicsRequest<NeonomicsConsentResponse>(path, { deviceId, sessionId })
   },
 
   /**

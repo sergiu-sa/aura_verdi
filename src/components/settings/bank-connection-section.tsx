@@ -15,9 +15,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { POPULAR_BANKS, NORWEGIAN_BANKS } from '@/lib/constants/norwegian-banks'
 
 // ── Types ────────────────────────────────────────────────────────────────────
+
+interface AvailableBank {
+  id: string
+  name: string
+}
 
 interface BankConnection {
   id: string
@@ -85,6 +89,9 @@ export function BankConnectionSection({
   const [showBankPicker, setShowBankPicker] = useState(false)
   const [showAllBanks, setShowAllBanks] = useState(false)
   const [connectingBankId, setConnectingBankId] = useState<string | null>(null)
+  const [availableBanks, setAvailableBanks] = useState<AvailableBank[]>([])
+  const [banksLoading, setBanksLoading] = useState(false)
+  const [banksError, setBanksError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(
@@ -132,15 +139,35 @@ export function BankConnectionSection({
     }
   }, [justConnected, newConnectionId, triggerSync])
 
+  // ── Load available banks from Neonomics ────────────────────────────────────
+  async function loadAvailableBanks() {
+    if (availableBanks.length > 0) return // already loaded
+    setBanksLoading(true)
+    setBanksError(null)
+    try {
+      const res = await fetch('/api/bank/list')
+      const data = await res.json()
+      if (!res.ok) {
+        setBanksError(data.error ?? 'Unable to load banks. Please try again.')
+      } else {
+        setAvailableBanks(data.banks ?? [])
+      }
+    } catch {
+      setBanksError('Unable to load banks. Please check your connection.')
+    } finally {
+      setBanksLoading(false)
+    }
+  }
+
   // ── Connect flow ───────────────────────────────────────────────────────────
-  async function handleConnectBank(bankId: string) {
+  async function handleConnectBank(bankId: string, bankName: string) {
     setConnectingBankId(bankId)
     setErrorMessage(null)
     try {
       const res = await fetch('/api/bank/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bankId }),
+        body: JSON.stringify({ bankId, bankName }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -157,7 +184,9 @@ export function BankConnectionSection({
   }
 
   // ── Banks to show in picker ────────────────────────────────────────────────
-  const banksToShow = showAllBanks ? NORWEGIAN_BANKS : POPULAR_BANKS
+  // Show first 8 by default (Neonomics returns them sorted by popularity/usage),
+  // show all when the user clicks "Show all supported banks"
+  const banksToShow = showAllBanks ? availableBanks : availableBanks.slice(0, 8)
   // Don't show banks the user has already connected
   const connectedBankIds = new Set(connections.map((c) => c.bank_id))
 
@@ -243,7 +272,7 @@ export function BankConnectionSection({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleConnectBank(conn.bank_id)}
+                    onClick={() => handleConnectBank(conn.bank_id, conn.bank_name)}
                     disabled={!!connectingBankId}
                     className="text-xs text-[#D4A039] hover:text-[#E8E8EC]"
                   >
@@ -276,6 +305,7 @@ export function BankConnectionSection({
           onClick={() => {
             setShowBankPicker(true)
             setErrorMessage(null)
+            loadAvailableBanks()
           }}
           className="bg-[#0D7377] hover:bg-[#11999E] text-white text-sm"
         >
@@ -300,42 +330,67 @@ export function BankConnectionSection({
             </button>
           </div>
 
-          <div className="space-y-2">
-            {banksToShow.map((bank) => {
-              const isConnected = connectedBankIds.has(bank.id)
-              const isConnecting = connectingBankId === bank.id
-              return (
-                <button
-                  key={bank.id}
-                  onClick={() => !isConnected && !isConnecting && handleConnectBank(bank.id)}
-                  disabled={isConnected || !!connectingBankId}
-                  className={`
-                    w-full flex items-center justify-between p-3 rounded-lg text-left
-                    border transition-colors
-                    ${isConnected
-                      ? 'border-[#2C2C3A] bg-[#121218] opacity-50 cursor-not-allowed'
-                      : isConnecting
-                        ? 'border-[#0D7377] bg-[#0D7377]/10 cursor-wait'
-                        : 'border-[#2C2C3A] hover:border-[#0D7377] hover:bg-[#0D7377]/5 cursor-pointer'
-                    }
-                  `}
-                >
-                  <span className="text-sm text-[#E8E8EC]">{bank.name}</span>
-                  <span className="text-xs text-[#8888A0]">
-                    {isConnected ? 'Already connected' : isConnecting ? 'Connecting...' : 'Connect →'}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+          {/* Loading state */}
+          {banksLoading && (
+            <p className="text-sm text-[#8888A0] py-4 text-center">
+              Loading available banks...
+            </p>
+          )}
 
-          {!showAllBanks && (
-            <button
-              onClick={() => setShowAllBanks(true)}
-              className="mt-3 text-xs text-[#8888A0] hover:text-[#0D7377] underline"
-            >
-              Show all supported banks
-            </button>
+          {/* Error state */}
+          {!banksLoading && banksError && (
+            <div className="py-2">
+              <p className="text-sm text-[#F08080] mb-2">{banksError}</p>
+              <button
+                onClick={() => { setAvailableBanks([]); setBanksError(null); loadAvailableBanks() }}
+                className="text-xs text-[#8888A0] hover:text-[#0D7377] underline"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {/* Bank list */}
+          {!banksLoading && !banksError && (
+            <>
+              <div className="space-y-2">
+                {banksToShow.map((bank) => {
+                  const isConnected = connectedBankIds.has(bank.id)
+                  const isConnecting = connectingBankId === bank.id
+                  return (
+                    <button
+                      key={bank.id}
+                      onClick={() => !isConnected && !isConnecting && handleConnectBank(bank.id, bank.name)}
+                      disabled={isConnected || !!connectingBankId}
+                      className={`
+                        w-full flex items-center justify-between p-3 rounded-lg text-left
+                        border transition-colors
+                        ${isConnected
+                          ? 'border-[#2C2C3A] bg-[#121218] opacity-50 cursor-not-allowed'
+                          : isConnecting
+                            ? 'border-[#0D7377] bg-[#0D7377]/10 cursor-wait'
+                            : 'border-[#2C2C3A] hover:border-[#0D7377] hover:bg-[#0D7377]/5 cursor-pointer'
+                        }
+                      `}
+                    >
+                      <span className="text-sm text-[#E8E8EC]">{bank.name}</span>
+                      <span className="text-xs text-[#8888A0]">
+                        {isConnected ? 'Already connected' : isConnecting ? 'Connecting...' : 'Connect →'}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {!showAllBanks && availableBanks.length > 8 && (
+                <button
+                  onClick={() => setShowAllBanks(true)}
+                  className="mt-3 text-xs text-[#8888A0] hover:text-[#0D7377] underline"
+                >
+                  Show all {availableBanks.length} supported banks
+                </button>
+              )}
+            </>
           )}
 
           <p className="mt-4 text-xs text-[#8888A0] leading-relaxed">
