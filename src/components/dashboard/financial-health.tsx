@@ -61,7 +61,6 @@ export function FinancialHealth({
   status,
   totalMonthlyIncome,
   totalMonthlyExpenses,
-  safeToSpend,
 }: Props) {
   const { label, sublabel, dot, bg, border } = CONFIG[status]
   const hasData = status !== 'no-data'
