@@ -36,8 +36,5 @@ yarn-error.log*
 # Supabase local dev
 supabase/.temp/
 
-CLAUDE.md
-aura-technical-spec.md
-aura-concept.md
-NOTES.md
-AGENT-STATUS.md
+# Personal notes and project concepts
+notes/

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BankConnectionSection } from '@/components/settings/bank-connection-section'
+import { PartnerSection } from '@/components/settings/partner-section'
 
 export const metadata: Metadata = { title: 'Settings' }
 
@@ -49,30 +50,8 @@ export default async function SettingsPage({ searchParams }: Props) {
         newConnectionId={newConnectionId}
       />
 
-      {/* ── Coming soon sections ──────────────────────────────────────── */}
-      <section className="mb-10 opacity-40">
-        <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">
-          Partner
-        </p>
-        <h2 className="font-display text-2xl text-[#E8E8EC] mb-2">
-          Shared Economy
-        </h2>
-        <p className="text-[#8888A0] text-sm">
-          Invite your partner to share a combined financial overview. Coming in Step 9.
-        </p>
-      </section>
-
-      <section className="mb-10 opacity-40">
-        <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">
-          Data
-        </p>
-        <h2 className="font-display text-2xl text-[#E8E8EC] mb-2">
-          Privacy & Export
-        </h2>
-        <p className="text-[#8888A0] text-sm">
-          Export or delete all your data. Coming in Step 10.
-        </p>
-      </section>
+      {/* ── Partner Section (Step 10) ─────────────────────────────────── */}
+      <PartnerSection userId={user.id} />
     </div>
   )
 }
