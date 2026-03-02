@@ -38,11 +38,15 @@ export async function GET(request: NextRequest) {
   //    Neonomics may use different param names depending on the bank and flow.
   //    We also accept the 'state' param since we set it to sessionId in connect.
   const params = request.nextUrl.searchParams
-  const sessionId =
+  const rawSessionId =
     params.get('sessionId') ??
     params.get('session_id') ??
     params.get('state') ??
     null
+
+  // Basic validation — defense in depth (query goes to parameterized DB query,
+  // but we still reject obviously invalid input)
+  const sessionId = rawSessionId && rawSessionId.length <= 200 ? rawSessionId : null
 
   try {
     let connectionQuery

@@ -87,8 +87,8 @@ export async function POST(request: Request) {
 
     if (!partnerAuthUser) {
       return NextResponse.json(
-        { error: "That email isn't registered with Aura. Ask your partner to create an account first." },
-        { status: 404 }
+        { error: 'If that email is registered with Aura, your partner will see the invite.' },
+        { status: 200 }
       )
     }
 

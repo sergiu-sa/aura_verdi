@@ -6,6 +6,7 @@ import { FinancialHealth, type HealthStatus } from '@/components/dashboard/finan
 import { BillCountdown } from '@/components/dashboard/bill-countdown'
 import { SpendingChart, type CategorySpend } from '@/components/dashboard/spending-chart'
 import { DailyTip } from '@/components/dashboard/daily-tip'
+import { PartnerOverview } from '@/components/dashboard/partner-overview'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -144,6 +145,44 @@ async function getDashboardData(userId: string) {
   }
 }
 
+// ── Partner data ─────────────────────────────────────────────────────────────
+
+async function getPartnerDashboardData(userId: string) {
+  const supabase = await createClient()
+
+  // Check if user has a partner
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('partner_id')
+    .eq('id', userId)
+    .single()
+
+  if (!profile?.partner_id) return null
+
+  // Fetch partner's shared accounts and partner name in parallel
+  const [sharedRes, partnerRes] = await Promise.all([
+    supabase
+      .from('accounts')
+      .select('account_name, balance')
+      .neq('user_id', userId)
+      .eq('is_shared_with_partner', true),
+
+    supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', profile.partner_id)
+      .single(),
+  ])
+
+  const accounts = sharedRes.data ?? []
+  if (accounts.length === 0) return null
+
+  const partnerName = partnerRes.data?.display_name ?? 'Partner'
+  const partnerTotalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0)
+
+  return { partnerName, accounts, partnerTotalBalance }
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function DashboardPage() {
@@ -154,7 +193,10 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const data = await getDashboardData(user.id)
+  const [data, partnerData] = await Promise.all([
+    getDashboardData(user.id),
+    getPartnerDashboardData(user.id),
+  ])
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto animate-fade-in">
@@ -205,6 +247,18 @@ export default async function DashboardPage() {
           data={data.sortedCategories}
           totalExpenses={data.totalMonthlyExpenses}
         />
+
+        {/* ── Partner Overview ───────────────────────────────────────── */}
+        {partnerData && (
+          <div className="sm:col-span-2">
+            <PartnerOverview
+              partnerName={partnerData.partnerName}
+              accounts={partnerData.accounts}
+              partnerTotalBalance={partnerData.partnerTotalBalance}
+              householdTotal={data.totalBalance + partnerData.partnerTotalBalance}
+            />
+          </div>
+        )}
 
       </div>
     </div>

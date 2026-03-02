@@ -24,7 +24,7 @@ export async function buildFinancialContext(
   thirtyDaysAhead.setDate(thirtyDaysAhead.getDate() + 30)
 
   // Fetch all data in parallel for speed
-  const [accountsRes, billsRes, transactionsRes, docsRes] = await Promise.all([
+  const [accountsRes, billsRes, transactionsRes, docsRes, partnerAccountsRes] = await Promise.all([
     supabase
       .from('accounts')
       .select('balance, account_name, currency')
@@ -51,12 +51,20 @@ export async function buildFinancialContext(
       .eq('status', 'analyzed')
       .order('uploaded_at', { ascending: false })
       .limit(3),
+
+    // Partner's shared accounts (RLS enforces access)
+    supabase
+      .from('accounts')
+      .select('account_name, balance')
+      .neq('user_id', userId)
+      .eq('is_shared_with_partner', true),
   ])
 
   const accounts = accountsRes.data ?? []
   const bills = billsRes.data ?? []
   const transactions = transactionsRes.data ?? []
   const recentDocs = docsRes.data ?? []
+  const partnerAccounts = partnerAccountsRes.data ?? []
 
   // If no bank data yet, return a "not connected" context
   if (accounts.length === 0) {
@@ -127,6 +135,19 @@ Expenses last 30 days: ${formatNOK(totalMonthlyExpenses)}
       const summary = d.ai_summary?.slice(0, 150) ?? 'No summary'
       context += `- ${d.document_type}: ${summary}\n`
     }
+  }
+
+  if (partnerAccounts.length > 0) {
+    const partnerTotal = partnerAccounts.reduce((sum, a) => sum + Number(a.balance), 0)
+    const householdTotal = totalBalance + partnerTotal
+
+    context += `\n## PARTNER'S SHARED ACCOUNTS\n`
+    context += `Shared accounts: ${partnerAccounts.length}\n`
+    context += `Partner shared balance: ${formatNOK(partnerTotal)}\n`
+    for (const a of partnerAccounts) {
+      context += `- ${a.account_name}: ${formatNOK(Number(a.balance))}\n`
+    }
+    context += `Combined household balance: ${formatNOK(householdTotal)}\n`
   }
 
   return context

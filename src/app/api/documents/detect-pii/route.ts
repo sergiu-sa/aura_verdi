@@ -16,6 +16,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { anthropic } from '@/lib/anthropic/client'
 import { detectPII } from '@/lib/redaction/pii-detector'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/utils/rate-limiter'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -33,7 +34,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // 2. VALIDATE INPUT
+  // 2. RATE LIMIT — shares the document analysis budget (20/hr)
+  const { documentAnalyze: limit } = RATE_LIMITS
+  if (!checkRateLimit(`doc-pii:${user.id}`, limit.max, limit.windowMs)) {
+    return NextResponse.json(
+      { error: 'Too many document processing requests. Please wait before trying again.' },
+      { status: 429 }
+    )
+  }
+
+  // 3. VALIDATE INPUT
   let body: unknown
   try {
     body = await request.json()

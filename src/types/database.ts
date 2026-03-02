@@ -1,11 +1,21 @@
 /**
  * Supabase database types.
- * These are manually written for now — after Step 2 (Database setup),
- * run `npx supabase gen types typescript --project-id YOUR_PROJECT_ID`
- * to generate these automatically from your actual schema.
  *
- * The generated file will replace this one.
+ * Manually maintained to match migrations 001–007.
+ * If schema drifts, regenerate with:
+ *   npx supabase gen types typescript --project-id YOUR_PROJECT_ID
  */
+
+export type NotificationPreferences = {
+  daily_summary?: boolean
+  bill_reminders?: boolean
+  bill_reminder_days?: number
+  anomaly_alerts?: boolean
+  email_critical?: boolean
+  email_informational?: boolean
+  quiet_hours_start?: string
+  quiet_hours_end?: string
+}
 
 export type Database = {
   public: {
@@ -16,11 +26,7 @@ export type Database = {
           display_name: string | null
           partner_id: string | null
           preferred_language: 'no' | 'en'
-          notification_preferences: {
-            daily_checkin: boolean
-            bill_reminders: boolean
-            anomaly_alerts: boolean
-          }
+          notification_preferences: NotificationPreferences
           created_at: string
           updated_at: string
         }
@@ -29,21 +35,13 @@ export type Database = {
           display_name?: string | null
           partner_id?: string | null
           preferred_language?: 'no' | 'en'
-          notification_preferences?: {
-            daily_checkin: boolean
-            bill_reminders: boolean
-            anomaly_alerts: boolean
-          }
+          notification_preferences?: NotificationPreferences
         }
         Update: {
           display_name?: string | null
           partner_id?: string | null
           preferred_language?: 'no' | 'en'
-          notification_preferences?: {
-            daily_checkin: boolean
-            bill_reminders: boolean
-            anomaly_alerts: boolean
-          }
+          notification_preferences?: NotificationPreferences
         }
       }
       bank_connections: {
@@ -125,10 +123,17 @@ export type Database = {
           file_size_bytes: number | null
           mime_type: string | null
           document_type: 'contract' | 'letter' | 'invoice' | 'tax' | 'bank_statement' | 'inkasso' | 'other' | null
+          // Privacy Shield fields (migration 005)
+          extracted_text: string | null
+          redacted_text: string | null
+          redaction_map: Record<string, string> | null
+          redaction_status: 'pending' | 'auto_detected' | 'user_confirmed' | 'skipped' | null
+          pii_detections: Array<Record<string, unknown>> | null
           ai_summary: string | null
+          ai_summary_redacted: string | null
           ai_flags: Record<string, unknown> | null
           ai_analyzed_at: string | null
-          status: 'uploaded' | 'analyzing' | 'analyzed' | 'error'
+          status: 'uploaded' | 'pii_detected' | 'redaction_confirmed' | 'analyzing' | 'analyzed' | 'error'
           uploaded_at: string
         }
         Insert: Omit<Database['public']['Tables']['documents']['Row'], 'id' | 'uploaded_at'>
@@ -147,6 +152,61 @@ export type Database = {
         }
         Insert: Omit<Database['public']['Tables']['chat_messages']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['chat_messages']['Insert']>
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: 'bill_due' | 'low_balance' | 'document_deadline' | 'consent_expiry' | 'daily_summary' | 'analysis_complete' | 'spending_anomaly' | 'savings_milestone'
+          urgency: 'critical' | 'info' | 'background'
+          title: string
+          message: string
+          channel: 'in_app' | 'email' | 'both'
+          notification_key: string
+          is_read: boolean
+          is_emailed: boolean
+          related_entity_type: string | null
+          related_entity_id: string | null
+          created_at: string
+          expires_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at' | 'is_read' | 'is_emailed'>
+        Update: Partial<Database['public']['Tables']['notifications']['Insert']> & {
+          is_read?: boolean
+          is_emailed?: boolean
+        }
+      }
+      email_log: {
+        Row: {
+          id: string
+          user_id: string
+          notification_id: string | null
+          email_type: string
+          resend_id: string | null
+          sent_at: string
+          status: 'sent' | 'failed' | 'bounced'
+        }
+        Insert: Omit<Database['public']['Tables']['email_log']['Row'], 'id' | 'sent_at'>
+        Update: Partial<Database['public']['Tables']['email_log']['Insert']>
+      }
+      partner_sharing: {
+        Row: {
+          id: string
+          user_id: string
+          partner_id: string
+          shared_account_ids: string[]
+          permission_level: 'view_only' | 'full'
+          accepted: boolean
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['partner_sharing']['Row'], 'id' | 'created_at' | 'shared_account_ids' | 'permission_level' | 'accepted'> & {
+          shared_account_ids?: string[]
+          permission_level?: 'view_only' | 'full'
+          accepted?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['partner_sharing']['Insert']> & {
+          accepted?: boolean
+        }
       }
     }
     Views: Record<string, never>

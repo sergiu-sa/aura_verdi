@@ -95,12 +95,22 @@ export async function POST(request: Request) {
     const results = []
     for (const conn of connections) {
       const syncResult = await syncBankConnection(supabase, user.id, conn.id)
+
+      // Log real errors server-side, return only generic messages to client
+      if (syncResult.errors.length > 0) {
+        console.error(
+          `[BANK_SYNC] Errors for user ${user.id}, connection ${conn.id}:`,
+          syncResult.errors
+        )
+      }
+
       results.push({
         connectionId: conn.id,
         accountsSynced: syncResult.accountsSynced,
         transactionsSynced: syncResult.transactionsSynced,
-        // Only include errors if there were any
-        ...(syncResult.errors.length > 0 && { errors: syncResult.errors }),
+        ...(syncResult.errors.length > 0 && {
+          errors: syncResult.errors.map(() => 'One or more items could not be synced'),
+        }),
       })
     }
 
