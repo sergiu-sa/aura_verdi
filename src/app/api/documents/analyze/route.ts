@@ -155,6 +155,7 @@ export async function POST(request: Request) {
         deadlines: analysisForUser.deadlines ?? analysis.deadlines,
         urgency: analysis.urgency,    // urgency stays as-is (not PII)
         recommended_action: analysisForUser.recommended_action ?? analysis.recommended_action,
+        financial_extract: analysisForUser.financial_extract ?? analysis.financial_extract ?? null,
       },
       ai_analyzed_at: new Date().toISOString(),
       status: 'analyzed',

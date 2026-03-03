@@ -55,4 +55,6 @@ export const RATE_LIMITS = {
   documentAnalyze: { max: 20, windowMs: 60 * 60 * 1000 },
   // Bank sync (Neonomics) — 6 per hour per user (every ~10 min)
   bankSync: { max: 6, windowMs: 60 * 60 * 1000 },
+  // Bills — 60 per hour per user
+  bills: { max: 60, windowMs: 60 * 60 * 1000 },
 } as const

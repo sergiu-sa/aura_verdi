@@ -14,15 +14,25 @@ export default async function DocumentsPage() {
 
   if (!user) redirect('/login')
 
-  const { data: documents } = await supabase
-    .from('documents')
-    .select(
-      'id, original_filename, file_size_bytes, mime_type, document_type, extracted_text, ai_summary, ai_flags, ai_analyzed_at, status, redaction_status, pii_detections, uploaded_at'
-    )
-    .eq('user_id', user.id)
-    .order('uploaded_at', { ascending: false })
+  const [docsRes, linkedBillsRes] = await Promise.all([
+    supabase
+      .from('documents')
+      .select(
+        'id, original_filename, file_size_bytes, mime_type, document_type, extracted_text, ai_summary, ai_flags, ai_analyzed_at, status, redaction_status, pii_detections, uploaded_at'
+      )
+      .eq('user_id', user.id)
+      .order('uploaded_at', { ascending: false }),
 
-  const docs = (documents ?? []) as DocumentRecord[]
+    // Find which documents already have linked bills
+    supabase
+      .from('bills_upcoming')
+      .select('source_document_id')
+      .eq('user_id', user.id)
+      .not('source_document_id', 'is', null),
+  ])
+
+  const docs = (docsRes.data ?? []) as DocumentRecord[]
+  const linkedDocIds = (linkedBillsRes.data ?? []).map((b) => b.source_document_id as string)
 
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto animate-fade-in">
@@ -33,7 +43,7 @@ export default async function DocumentsPage() {
         information first — you control what gets masked before any AI analysis.
       </p>
 
-      <DocumentList initialDocuments={docs} />
+      <DocumentList initialDocuments={docs} linkedDocIds={linkedDocIds} />
 
       <p className="mt-8 text-[10px] text-[#4A4A60] leading-relaxed">
         Aura is not a lawyer or licensed financial advisor. Document summaries are for

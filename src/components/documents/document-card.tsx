@@ -14,7 +14,9 @@
  */
 
 import { useState } from 'react'
+import { Plus, Check } from 'lucide-react'
 import { RedactionPreview } from './redaction-preview'
+import { AddExpenseDialog } from './add-expense-dialog'
 import type { PIIDetection } from '@/lib/redaction/pii-detector'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -32,6 +34,13 @@ export interface DocumentRecord {
     deadlines?: string[]
     urgency?: 'low' | 'medium' | 'high'
     recommended_action?: string | null
+    financial_extract?: {
+      amount: number
+      currency: string
+      due_date: string | null
+      payee: string | null
+      is_expense: boolean
+    } | null
   } | null
   ai_analyzed_at: string | null
   status: 'uploaded' | 'text_extracted' | 'pii_detected' | 'redaction_confirmed' | 'analyzing' | 'analyzed' | 'error'
@@ -45,6 +54,7 @@ interface Props {
   onRefresh: () => void
   onRetryAnalysis?: (documentId: string) => void
   retrying?: boolean
+  hasLinkedBill?: boolean
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -86,8 +96,10 @@ function fileIcon(mimeType: string | null): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false }: Props) {
+export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false, hasLinkedBill = false }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false)
+  const [justAdded, setJustAdded] = useState(false)
   const [showRedactionPreview, setShowRedactionPreview] = useState(
     doc.status === 'pii_detected'
   )
@@ -217,7 +229,40 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
                 )}
               </div>
             )}
+
+            {/* Add as expense — only for documents with extracted financial data */}
+            {doc.ai_flags?.financial_extract && (
+              <div className="mt-3 pt-3 border-t border-[#2C2C3A]">
+                {hasLinkedBill || justAdded ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-[#4DD9A0]">
+                    <Check size={14} />
+                    Added as expense
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setShowExpenseDialog(true)}
+                    className="inline-flex items-center gap-1.5 text-xs text-[#0D7377] hover:text-[#11999E] transition-colors"
+                  >
+                    <Plus size={14} />
+                    Add as upcoming expense
+                  </button>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Expense dialog */}
+          {showExpenseDialog && (
+            <AddExpenseDialog
+              doc={doc}
+              onClose={() => setShowExpenseDialog(false)}
+              onAdded={() => {
+                setShowExpenseDialog(false)
+                setJustAdded(true)
+                onRefresh()
+              }}
+            />
+          )}
         </>
       )}
 

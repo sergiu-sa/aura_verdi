@@ -54,6 +54,19 @@ RULES:
 - Be honest about urgency — don't downplay something that needs immediate action
 - Use placeholders in your response exactly as they appear in the input (the app will un-redact them)
 
+FINANCIAL EXTRACTION:
+For documents that represent a payable amount (invoice, inkasso, letter with payment demand),
+extract the key financial details into a structured object. This lets the user add the amount
+as an upcoming expense in their budget with one tap.
+
+Rules for financial_extract:
+- ONLY populate for document types with a clear, single payable/receivable amount: invoice, inkasso, or letter (if it contains a payment demand)
+- Set to null for contracts, bank_statement, tax, and other types — or when no clear amount exists
+- "amount" is always a positive number (the sign is determined by is_expense)
+- "due_date" in ISO format (YYYY-MM-DD), or null if no payment date is found
+- "payee" is the company/entity to pay or receiving payment, or null if unclear
+- "is_expense" is true for money the user must pay out, false for refunds or amounts owed to the user
+
 Respond ONLY with a valid JSON object in exactly this format:
 {
   "document_type": "contract" | "letter" | "invoice" | "tax" | "bank_statement" | "inkasso" | "other",
@@ -61,9 +74,17 @@ Respond ONLY with a valid JSON object in exactly this format:
   "concerns": ["Array of specific things to pay attention to"],
   "deadlines": ["Array of dates or timeframes mentioned"],
   "urgency": "low" | "medium" | "high",
-  "recommended_action": "What the user should do next (1-2 sentences, or null if no action needed)"
+  "recommended_action": "What the user should do next (1-2 sentences, or null if no action needed)",
+  "financial_extract": {
+    "amount": 1420.00,
+    "currency": "NOK",
+    "due_date": "2026-03-15",
+    "payee": "Company name",
+    "is_expense": true
+  }
 }
 
+Set "financial_extract" to null when no actionable payment amount exists.
 Do not include any text outside the JSON object.
 `.trim()
 

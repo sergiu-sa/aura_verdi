@@ -15,9 +15,11 @@ import { UploadDialog } from './upload-dialog'
 
 interface Props {
   initialDocuments: DocumentRecord[]
+  linkedDocIds?: string[]
 }
 
-export function DocumentList({ initialDocuments }: Props) {
+export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
+  const linkedDocSet = new Set(linkedDocIds)
   const router = useRouter()
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [retryingId, setRetryingId] = useState<string | null>(null)
@@ -93,6 +95,7 @@ export function DocumentList({ initialDocuments }: Props) {
             onRefresh={refresh}
             onRetryAnalysis={handleRetryAnalysis}
             retrying={retryingId === doc.id}
+            hasLinkedBill={linkedDocSet.has(doc.id)}
           />
         ))}
       </div>
