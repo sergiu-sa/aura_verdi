@@ -1,5 +1,77 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { formatNOK } from '@/lib/utils/format-currency'
+import { LEGAL_REFERENCES, type LegalReference } from '@/lib/constants/legal-references'
+
+/**
+ * Maps user situations (document types, financial status) to relevant law keys.
+ * When a situation is detected, the corresponding laws are injected into
+ * Claude's context so it can give specific, law-backed advice.
+ */
+const SITUATION_LAW_MAP: Record<string, string[]> = {
+  // Document types (from document-analysis.ts classification)
+  inkasso: ['inkassoloven', 'tvangsfullbyrdelsesloven', 'gjeldsordningsloven', 'forsinkelsesrenteloven'],
+  letter: ['inkassoloven', 'finansavtaleloven'],
+  contract: ['husleieloven', 'finansavtaleloven', 'forbrukerkjopsloven'],
+  invoice: ['forsinkelsesrenteloven', 'forbrukerkjopsloven'],
+  tax: ['finansavtaleloven'],
+  bank_statement: ['finansavtaleloven'],
+  // Financial status triggers
+  overdue_bills: ['inkassoloven', 'forsinkelsesrenteloven', 'tvangsfullbyrdelsesloven'],
+  low_balance: ['gjeldsordningsloven', 'inkassoloven'],
+}
+
+/**
+ * Determines which legal references are relevant based on the user's
+ * document types and financial status. Returns deduplicated references
+ * with the reason they're relevant.
+ */
+function getRelevantLaws(
+  documentTypes: string[],
+  hasOverdueBills: boolean,
+  safeToSpend: number
+): { ref: LegalReference; reasons: string[] }[] {
+  const lawReasons = new Map<string, string[]>()
+
+  // Check document types
+  for (const docType of documentTypes) {
+    const lawKeys = SITUATION_LAW_MAP[docType]
+    if (!lawKeys) continue
+    for (const key of lawKeys) {
+      const existing = lawReasons.get(key) ?? []
+      existing.push(`${docType} document on file`)
+      lawReasons.set(key, existing)
+    }
+  }
+
+  // Check financial status
+  if (hasOverdueBills) {
+    for (const key of SITUATION_LAW_MAP.overdue_bills) {
+      const existing = lawReasons.get(key) ?? []
+      existing.push('overdue bills detected')
+      lawReasons.set(key, existing)
+    }
+  }
+
+  if (safeToSpend <= 0) {
+    for (const key of SITUATION_LAW_MAP.low_balance) {
+      const existing = lawReasons.get(key) ?? []
+      existing.push('no safe-to-spend margin')
+      lawReasons.set(key, existing)
+    }
+  }
+
+  // Match keys to full references
+  const results: { ref: LegalReference; reasons: string[] }[] = []
+  for (const [key, reasons] of lawReasons) {
+    const ref = LEGAL_REFERENCES.find((r) => r.key === key)
+    if (ref) {
+      // Deduplicate reasons
+      results.push({ ref, reasons: [...new Set(reasons)] })
+    }
+  }
+
+  return results
+}
 
 /**
  * Builds a summarized financial context string to inject into Claude API calls.
@@ -24,7 +96,7 @@ export async function buildFinancialContext(
   thirtyDaysAhead.setDate(thirtyDaysAhead.getDate() + 30)
 
   // Fetch all data in parallel for speed
-  const [accountsRes, billsRes, transactionsRes, docsRes, partnerAccountsRes] = await Promise.all([
+  const [accountsRes, billsRes, transactionsRes, docsRes, allDocTypesRes, partnerAccountsRes] = await Promise.all([
     supabase
       .from('accounts')
       .select('balance, account_name, currency')
@@ -52,6 +124,13 @@ export async function buildFinancialContext(
       .order('uploaded_at', { ascending: false })
       .limit(3),
 
+    // All document types the user has (for legal context mapping)
+    supabase
+      .from('documents')
+      .select('document_type')
+      .eq('user_id', userId)
+      .eq('status', 'analyzed'),
+
     // Partner's shared accounts (RLS enforces access)
     supabase
       .from('accounts')
@@ -64,7 +143,15 @@ export async function buildFinancialContext(
   const bills = billsRes.data ?? []
   const transactions = transactionsRes.data ?? []
   const recentDocs = docsRes.data ?? []
+  const allDocTypes = allDocTypesRes.data ?? []
   const partnerAccounts = partnerAccountsRes.data ?? []
+
+  // Deduplicated list of document types the user has
+  const userDocTypes = [...new Set(allDocTypes.map((d) => d.document_type).filter(Boolean))]
+
+  // Check if any bills are overdue (due_date in the past)
+  const today = now.toISOString().split('T')[0]
+  const hasOverdueBills = bills.some((b) => b.due_date < today)
 
   // If no bank data yet, return a "not connected" context
   if (accounts.length === 0) {
@@ -148,6 +235,21 @@ Expenses last 30 days: ${formatNOK(totalMonthlyExpenses)}
       context += `- ${a.account_name}: ${formatNOK(Number(a.balance))}\n`
     }
     context += `Combined household balance: ${formatNOK(householdTotal)}\n`
+  }
+
+  // ── Situation-aware legal references ──────────────────────────────────
+  const relevantLaws = getRelevantLaws(userDocTypes, hasOverdueBills, safeToSpend)
+
+  if (relevantLaws.length > 0) {
+    context += `\n## APPLICABLE LAWS FOR THIS USER\n`
+    context += `The following Norwegian laws are relevant based on the user's documents and financial status. Cite these actively when the user asks related questions.\n\n`
+    for (const { ref, reasons } of relevantLaws) {
+      context += `### ${ref.nameno} (${ref.nameen})\n`
+      context += `- Why relevant: ${reasons.join('; ')}\n`
+      context += `- Key rights: ${ref.relevance}\n`
+      context += `- Official text: ${ref.lovdataUrl}\n`
+      context += `- Last verified: ${ref.lastVerified}\n\n`
+    }
   }
 
   return context
