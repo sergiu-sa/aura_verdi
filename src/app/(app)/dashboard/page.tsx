@@ -7,6 +7,8 @@ import { BillCountdown } from '@/components/dashboard/bill-countdown'
 import { SpendingChart, type CategorySpend } from '@/components/dashboard/spending-chart'
 import { DailyTip } from '@/components/dashboard/daily-tip'
 import { PartnerOverview } from '@/components/dashboard/partner-overview'
+import { ForecastMini } from '@/components/dashboard/forecast-mini'
+import { buildForecast } from '@/lib/forecast/engine'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -198,6 +200,22 @@ export default async function DashboardPage() {
     getPartnerDashboardData(user.id),
   ])
 
+  // Build a 30-day forecast for the mini sparkline card
+  const forecastPoints = data.hasBank
+    ? buildForecast({
+        currentBalance: data.totalBalance,
+        bills: data.bills.map((b) => ({
+          name: b.name,
+          amount: Number(b.amount),
+          dueDate: b.due_date,
+          recurrence: null, // Dashboard bills query doesn't fetch recurrence
+        })),
+        recurringIncome: [],
+        plannedEvents: [],
+        days: 30,
+      })
+    : []
+
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto animate-fade-in">
       <p className="text-section-header mb-2">Overview</p>
@@ -229,6 +247,11 @@ export default async function DashboardPage() {
 
         {/* ── Bill Countdown ────────────────────────────────────────── */}
         <BillCountdown bills={data.bills} />
+
+        {/* ── Forecast Mini ──────────────────────────────────────────── */}
+        {forecastPoints.length > 0 && (
+          <ForecastMini points={forecastPoints} />
+        )}
 
         {/* ── Daily Tip ─────────────────────────────────────────────── */}
         <DailyTip

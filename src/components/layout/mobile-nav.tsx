@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import {
   LayoutDashboard,
+  TrendingUp,
   MessageCircle,
   FileText,
-  Scale,
   Settings,
   type LucideIcon,
 } from 'lucide-react'
@@ -20,9 +20,9 @@ interface MobileNavItem {
 
 const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Forecast', href: '/forecast', icon: TrendingUp },
   { label: 'Chat', href: '/chat', icon: MessageCircle },
   { label: 'Docs', href: '/documents', icon: FileText },
-  { label: 'Legal', href: '/legal', icon: Scale },
   { label: 'Settings', href: '/settings', icon: Settings },
 ]
 

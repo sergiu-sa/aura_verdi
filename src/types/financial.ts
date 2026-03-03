@@ -85,3 +85,30 @@ export interface FinancialHealth {
   nextBillDays: number | null
   monthlyDeficit: number // Positive = surplus, negative = deficit
 }
+
+// ── Planned Event (forecast feature) ─────────────────────────────────────────
+
+export interface PlannedEvent {
+  id: string
+  name: string
+  amount: number // Negative = expense, positive = income
+  eventDate: string // ISO date "yyyy-mm-dd"
+  recurrence: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
+  category: string | null
+  notes: string | null
+}
+
+// ── Forecast Data Point ──────────────────────────────────────────────────────
+
+export interface ForecastEvent {
+  name: string
+  amount: number
+  source: 'bill' | 'income' | 'planned'
+}
+
+export interface ForecastPoint {
+  date: string // ISO date "yyyy-mm-dd"
+  balance: number // Projected balance at end of day
+  label: string // "dd.mm" for chart axis
+  events: ForecastEvent[]
+}

@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils/cn'
 import {
   LayoutDashboard,
+  TrendingUp,
   MessageCircle,
   FileText,
   Scale,
@@ -31,6 +32,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
     description: 'Financial overview',
+  },
+  {
+    label: 'Forecast',
+    href: '/forecast',
+    icon: TrendingUp,
+    description: 'Cash flow projection',
   },
   {
     label: 'Chat',
