@@ -18,6 +18,7 @@ function generateId(): string {
     return v.toString(16)
   })
 }
+import { RotateCcw } from 'lucide-react'
 import { MessageBubble } from './message-bubble'
 import { ChatInput } from './chat-input'
 import { QuickActions } from './quick-actions'
@@ -60,6 +61,13 @@ export function ChatContainer() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const handleNewConversation = useCallback(() => {
+    if (isStreaming) return
+    setMessages([WELCOME_MESSAGE])
+    setInput('')
+    conversationIdRef.current = generateId()
+  }, [isStreaming])
 
   const sendMessage = useCallback(async (content: string) => {
     const text = content.trim()
@@ -143,6 +151,20 @@ export function ChatContainer() {
       {/* ── Message list ───────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
         <div className="max-w-2xl mx-auto flex flex-col gap-4">
+          {/* New conversation button — only after interaction */}
+          {hasInteracted && (
+            <div className="flex justify-end -mb-2">
+              <button
+                onClick={handleNewConversation}
+                disabled={isStreaming}
+                className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors disabled:opacity-50"
+              >
+                <RotateCcw size={12} />
+                New conversation
+              </button>
+            </div>
+          )}
+
           {messages.map((msg, i) => {
             // Show typing indicator on the last assistant message while streaming
             const isLastAssistant =
