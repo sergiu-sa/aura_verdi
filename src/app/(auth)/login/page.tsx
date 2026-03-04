@@ -1,8 +1,8 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useRef, useState } from 'react'
 import Link from 'next/link'
-import { signIn } from '../actions'
+import { signIn, resendConfirmation } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,6 +11,9 @@ import { Label } from '@/components/ui/label'
 
 export default function LoginPage() {
   const [state, action, isPending] = useActionState(signIn, null)
+  const [resendState, resendAction, isResending] = useActionState(resendConfirmation, null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const [showResendSuccess, setShowResendSuccess] = useState(false)
 
   return (
     <div className="animate-fade-in">
@@ -38,6 +41,7 @@ export default function LoginPage() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              ref={emailRef}
               id="email"
               name="email"
               type="email"
@@ -77,10 +81,34 @@ export default function LoginPage() {
           {state?.error && (
             <div
               role="alert"
-              className="flex items-start gap-2 rounded-md bg-aura-danger-muted border border-aura-danger/30 px-4 py-3 text-sm text-aura-danger animate-fade-in"
+              className="flex flex-col gap-2 rounded-md bg-aura-danger-muted border border-aura-danger/30 px-4 py-3 text-sm text-aura-danger animate-fade-in"
             >
-              <span className="mt-0.5">⚠</span>
-              <span>{state.error}</span>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5">⚠</span>
+                <span>{state.error}</span>
+              </div>
+              {state.error.includes('confirm your email') && (
+                <form action={(formData) => {
+                  resendAction(formData)
+                  setShowResendSuccess(true)
+                }}>
+                  <input type="hidden" name="email" value={emailRef.current?.value ?? ''} />
+                  <button
+                    type="submit"
+                    disabled={isResending}
+                    className="text-xs text-aura-primary hover:text-aura-primary-light underline ml-5"
+                  >
+                    {isResending ? 'Sending...' : 'Resend confirmation email'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Resend confirmation success */}
+          {showResendSuccess && resendState?.message && (
+            <div className="rounded-md bg-[#0D3B2E] border border-[#2D8B6F]/40 px-4 py-3 text-sm text-[#4DD9A0] animate-fade-in">
+              {resendState.message}
             </div>
           )}
 

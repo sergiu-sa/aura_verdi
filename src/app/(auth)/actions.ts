@@ -130,6 +130,34 @@ export async function signUp(
   redirect('/dashboard')
 }
 
+// ── Resend Confirmation Email ──────────────────────────────────────────────
+
+/**
+ * Server Action: Resend the signup confirmation email.
+ * Always returns success to prevent email enumeration.
+ */
+export async function resendConfirmation(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const email = formData.get('email')
+  if (!email || typeof email !== 'string') {
+    return { error: 'Email is required.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  })
+
+  if (error) {
+    console.error(`[AUTH] Resend confirmation error: ${error.message}`)
+  }
+
+  return { message: `Confirmation email sent to ${email}. Check your inbox.` }
+}
+
 // ── Request Password Reset ─────────────────────────────────────────────────
 
 const ResetRequestSchema = z.object({

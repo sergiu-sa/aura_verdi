@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     // System = Aura personality + live financial context (no PII)
     const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: 3000,
       system: `${AURA_SYSTEM_PROMPT}\n\n${financialContext}`,
       messages: claudeMessages,
     })

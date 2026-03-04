@@ -93,6 +93,7 @@ export function BankConnectionSection({
   const [banksLoading, setBanksLoading] = useState(false)
   const [banksError, setBanksError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
+  const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(
     callbackError ? 'Bank authentication failed. Please try again.' : null
@@ -183,6 +184,30 @@ export function BankConnectionSection({
     }
   }
 
+  // ── Disconnect flow ────────────────────────────────────────────────────────
+  async function handleDisconnect(connectionId: string, bankName: string) {
+    if (!window.confirm(`Disconnect ${bankName}? You can reconnect later.`)) return
+    setDisconnecting(connectionId)
+    setErrorMessage(null)
+    try {
+      const res = await fetch('/api/bank/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ connectionId }),
+      })
+      if (res.ok) {
+        router.refresh()
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.error ?? 'Failed to disconnect bank.')
+      }
+    } catch {
+      setErrorMessage('Failed to disconnect. Please try again.')
+    } finally {
+      setDisconnecting(null)
+    }
+  }
+
   // ── Banks to show in picker ────────────────────────────────────────────────
   // Show first 8 by default (Neonomics returns them sorted by popularity/usage),
   // show all when the user clicks "Show all supported banks"
@@ -258,15 +283,26 @@ export function BankConnectionSection({
                   )}
                 </div>
                 {conn.status === 'active' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => triggerSync(conn.id)}
-                    disabled={syncing}
-                    className="text-xs text-[#8888A0] hover:text-[#0D7377]"
-                  >
-                    Sync
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => triggerSync(conn.id)}
+                      disabled={syncing}
+                      className="text-xs text-[#8888A0] hover:text-[#0D7377]"
+                    >
+                      Sync
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDisconnect(conn.id, conn.bank_name)}
+                      disabled={syncing || disconnecting === conn.id}
+                      className="text-xs text-[#8888A0] hover:text-[#C75050]"
+                    >
+                      {disconnecting === conn.id ? 'Disconnecting...' : 'Disconnect'}
+                    </Button>
+                  </div>
                 )}
                 {conn.status === 'expired' && (
                   <Button

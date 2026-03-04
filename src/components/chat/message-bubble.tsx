@@ -1,10 +1,29 @@
+'use client'
+
+import { useState } from 'react'
+import { Copy, Check } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days}d ago`
+  return new Date(iso).toLocaleDateString('nb-NO', { day: '2-digit', month: '2-digit' })
+}
 
 interface MessageBubbleProps {
   role: 'user' | 'assistant'
   content: string
   /** Show the typing indicator (three animated dots) instead of content */
   isTyping?: boolean
+  /** ISO timestamp for the message */
+  timestamp?: string
 }
 
 /**
@@ -12,13 +31,22 @@ interface MessageBubbleProps {
  * - User messages: right-aligned, teal background
  * - Aura messages: left-aligned, surface background, with avatar
  */
-export function MessageBubble({ role, content, isTyping = false }: MessageBubbleProps) {
+export function MessageBubble({ role, content, isTyping = false, timestamp }: MessageBubbleProps) {
   const isUser = role === 'user'
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* clipboard not available */ }
+  }
 
   return (
     <div
       className={cn(
-        'flex gap-3 animate-fade-in',
+        'flex gap-3 animate-fade-in group/msg',
         isUser ? 'flex-row-reverse' : 'flex-row'
       )}
     >
@@ -43,6 +71,23 @@ export function MessageBubble({ role, content, isTyping = false }: MessageBubble
         ) : (
           <MessageContent content={content} isUser={isUser} />
         )}
+
+        {/* Copy button — assistant messages only, on hover */}
+        {!isUser && !isTyping && content && (
+          <button
+            onClick={handleCopy}
+            className="absolute -bottom-1 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded text-[#8888A0] hover:text-[#E8E8EC] hover:bg-white/5"
+            title="Copy to clipboard"
+          >
+            {copied ? <Check size={12} className="text-[#2D8B6F]" /> : <Copy size={12} />}
+          </button>
+        )}
+
+        {timestamp && (
+          <p className={cn('text-[10px] mt-1.5', isUser ? 'text-white/40' : 'text-[#8888A0]')}>
+            {formatRelativeTime(timestamp)}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -65,7 +110,7 @@ function MessageContent({ content, isUser }: { content: string; isUser: boolean 
       {paragraphs.map((para, i) => {
         const lines = para.split('\n').filter(Boolean)
 
-        // Detect list paragraph (all lines start with - or *)
+        // Detect unordered list (all lines start with - or * or •)
         const isList = lines.length > 1 && lines.every((l) => /^[-*•]\s/.test(l))
 
         if (isList) {
@@ -81,14 +126,47 @@ function MessageContent({ content, isUser }: { content: string; isUser: boolean 
           )
         }
 
+        // Detect numbered list (all lines start with 1. 2. etc.)
+        const isNumberedList = lines.length > 1 && lines.every((l) => /^\d+\.\s/.test(l))
+
+        if (isNumberedList) {
+          return (
+            <ol key={i} className="flex flex-col gap-1 pl-4 list-none">
+              {lines.map((line, j) => (
+                <li key={j} className="flex gap-2">
+                  <span className={cn('text-xs font-medium mt-0.5 w-4 shrink-0 text-right', isUser ? 'text-white/60' : 'text-aura-primary')}>
+                    {j + 1}.
+                  </span>
+                  <span>{renderInline(line.replace(/^\d+\.\s/, ''))}</span>
+                </li>
+              ))}
+            </ol>
+          )
+        }
+
         return (
           <p key={i} className="whitespace-pre-wrap">
-            {lines.map((line, j) => (
-              <span key={j}>
-                {renderInline(line)}
-                {j < lines.length - 1 && <br />}
-              </span>
-            ))}
+            {lines.map((line, j) => {
+              // Detect headers (## or ### etc.)
+              const headerMatch = line.match(/^(#{1,3})\s(.+)/)
+              if (headerMatch) {
+                const level = headerMatch[1].length
+                const text = headerMatch[2]
+                const sizeClass = level === 1 ? 'text-base font-semibold' : level === 2 ? 'text-sm font-semibold' : 'text-sm font-medium'
+                return (
+                  <span key={j} className={cn('block', sizeClass, j > 0 && 'mt-1')}>
+                    {renderInline(text)}
+                    {j < lines.length - 1 && <br />}
+                  </span>
+                )
+              }
+              return (
+                <span key={j}>
+                  {renderInline(line)}
+                  {j < lines.length - 1 && <br />}
+                </span>
+              )
+            })}
           </p>
         )
       })}

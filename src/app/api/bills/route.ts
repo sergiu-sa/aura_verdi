@@ -1,11 +1,9 @@
 /**
- * POST /api/bills
+ * POST /api/bills — Create a bill
+ * PATCH /api/bills — Mark a bill as paid/unpaid
  *
- * Creates a bill in bills_upcoming, optionally linked to a source document.
- * Used when a user clicks "Add as expense" on an analyzed document.
- *
- * Accepts: { name, amount, dueDate, category?, recurrence?, sourceDocumentId? }
- * Returns: { bill: { id, name, amount, due_date } }
+ * POST accepts: { name, amount, dueDate, category?, recurrence?, sourceDocumentId? }
+ * PATCH accepts: { billId, is_paid }
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -106,6 +104,56 @@ export async function POST(request: Request) {
     return NextResponse.json({ bill })
   } catch (error) {
     console.error(`[BILLS] Unexpected error for user ${user.id}:`, error instanceof Error ? error.message : 'Unknown')
+    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 })
+  }
+}
+
+// ── PATCH /api/bills — Mark a bill as paid/unpaid ────────────────────────────
+
+const PatchBillSchema = z.object({
+  billId: z.string().uuid(),
+  is_paid: z.boolean(),
+})
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!checkRateLimit(`bills:${user.id}`, RATE_LIMITS.bills.max, RATE_LIMITS.bills.windowMs)) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+  }
+
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
+
+  const parsed = PatchBillSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input.' }, { status: 400 })
+  }
+
+  try {
+    const { billId, is_paid } = parsed.data
+    const { error: updateError } = await supabase
+      .from('bills_upcoming')
+      .update({ is_paid })
+      .eq('id', billId)
+      .eq('user_id', user.id)
+
+    if (updateError) {
+      console.error(`[BILLS] PATCH error for user ${user.id}:`, updateError.message)
+      return NextResponse.json({ error: 'Failed to update bill.' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error(`[BILLS] PATCH unexpected error for user ${user.id}:`, error instanceof Error ? error.message : 'Unknown')
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 })
   }
 }

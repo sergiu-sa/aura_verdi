@@ -1,15 +1,14 @@
 'use client'
 
 /**
- * SpendingChart — horizontal bar chart showing spending by category (last 30 days).
+ * SpendingChart — horizontal bar chart showing spending by category.
  *
- * Uses Recharts ResponsiveContainer + BarChart (layout="vertical").
- * Horizontal bars work well on mobile and fit long category names on the Y axis.
- *
- * This is a Client Component because Recharts uses browser APIs.
- * Data is passed as props from the Server Component parent.
+ * Supports time range selection: 7d, 30d, 90d, 1y.
+ * When `transactions` prop is provided, it aggregates client-side by range.
+ * Falls back to static `data`/`totalExpenses` props when transactions are unavailable.
  */
 
+import { useState, useMemo } from 'react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -21,6 +20,7 @@ import {
 } from 'recharts'
 import { formatNOK } from '@/lib/utils/format-currency'
 import { SPENDING_CATEGORIES } from '@/lib/constants/categories'
+import { cn } from '@/lib/utils/cn'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,9 +29,32 @@ export interface CategorySpend {
   amount: number
 }
 
+type TimeRange = '7d' | '30d' | '90d' | '1y'
+
+interface TransactionRow {
+  amount: number
+  category: string | null
+  transaction_date: string
+}
+
 interface Props {
   data: CategorySpend[]
   totalExpenses: number
+  transactions?: TransactionRow[]
+}
+
+const RANGE_DAYS: Record<TimeRange, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+  '1y': 365,
+}
+
+const RANGE_LABELS: Record<TimeRange, string> = {
+  '7d': 'Spending (7 days)',
+  '30d': 'Spending (30 days)',
+  '90d': 'Spending (90 days)',
+  '1y': 'Spending (1 year)',
 }
 
 // ── Custom tooltip ────────────────────────────────────────────────────────────
@@ -60,8 +83,41 @@ function CustomTooltip({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function SpendingChart({ data, totalExpenses }: Props) {
-  if (data.length === 0) {
+export function SpendingChart({ data, totalExpenses, transactions }: Props) {
+  const [range, setRange] = useState<TimeRange>('30d')
+
+  // Compute chart data from transactions when available, filtered by range
+  const { chartCategories, chartTotal } = useMemo(() => {
+    if (!transactions || transactions.length === 0) {
+      return { chartCategories: data, chartTotal: totalExpenses }
+    }
+
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - RANGE_DAYS[range])
+    const cutoffStr = cutoff.toISOString().split('T')[0]
+
+    const byCategory: Record<string, number> = {}
+    let total = 0
+
+    for (const tx of transactions) {
+      if (tx.transaction_date < cutoffStr) continue
+      const amount = tx.amount
+      if (amount >= 0) continue // skip income
+      const abs = Math.abs(amount)
+      total += abs
+      const cat = tx.category ?? 'ukategorisert'
+      byCategory[cat] = (byCategory[cat] ?? 0) + abs
+    }
+
+    const sorted: CategorySpend[] = Object.entries(byCategory)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([category, amount]) => ({ category, amount }))
+
+    return { chartCategories: sorted, chartTotal: total }
+  }, [transactions, range, data, totalExpenses])
+
+  if (chartCategories.length === 0) {
     return (
       <div className="surface p-5 rounded-xl">
         <p className="text-section-header mb-3">Spending this month</p>
@@ -73,7 +129,7 @@ export function SpendingChart({ data, totalExpenses }: Props) {
   }
 
   // Map to chart data with display labels
-  const chartData = data.map((item) => {
+  const chartData = chartCategories.map((item) => {
     const catKey = item.category as keyof typeof SPENDING_CATEGORIES
     const cat = SPENDING_CATEGORIES[catKey] ?? SPENDING_CATEGORIES.annet
     return {
@@ -89,10 +145,30 @@ export function SpendingChart({ data, totalExpenses }: Props) {
   return (
     <div className="surface p-5 rounded-xl col-span-1 sm:col-span-2">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-section-header">Spending this month</p>
-        <p className="text-amount text-[#E8E8EC] text-sm">
-          {formatNOK(totalExpenses)}
-        </p>
+        <p className="text-section-header">{transactions ? RANGE_LABELS[range] : 'Spending this month'}</p>
+        <div className="flex items-center gap-3">
+          {transactions && (
+            <div className="flex gap-1">
+              {(['7d', '30d', '90d', '1y'] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-xs transition-colors',
+                    range === r
+                      ? 'bg-[#0D7377] text-white'
+                      : 'text-[#8888A0] hover:text-[#E8E8EC]'
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="text-amount text-[#E8E8EC] text-sm">
+            {formatNOK(chartTotal)}
+          </p>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={chartHeight}>

@@ -1,8 +1,9 @@
+'use client'
+
 /**
  * BillCountdown — shows upcoming bills sorted by due date.
  *
- * Design: the closest bill is prominently displayed.
- * Remaining bills are shown as a compact list.
+ * Supports "Mark as paid" and "Add bill" inline.
  *
  * Urgency color:
  *   ≤ 3 days  → red
@@ -10,6 +11,8 @@
  *   > 7 days  → normal text
  */
 
+import { useState } from 'react'
+import { Check, Plus, X } from 'lucide-react'
 import { formatNOK } from '@/lib/utils/format-currency'
 
 interface Bill {
@@ -21,6 +24,7 @@ interface Bill {
 
 interface Props {
   bills: Bill[]
+  onRefresh?: () => void
 }
 
 function daysUntil(dueDateStr: string): number {
@@ -51,40 +55,177 @@ function daysLabel(days: number): string {
   return `in ${days} days`
 }
 
-export function BillCountdown({ bills }: Props) {
-  if (bills.length === 0) {
+export function BillCountdown({ bills, onRefresh }: Props) {
+  const [localBills, setLocalBills] = useState<Bill[]>(bills)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [marking, setMarking] = useState<string | null>(null)
+
+  // Add form state
+  const [formName, setFormName] = useState('')
+  const [formAmount, setFormAmount] = useState('')
+  const [formDate, setFormDate] = useState('')
+  const [formError, setFormError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleMarkPaid(billId: string) {
+    setMarking(billId)
+    try {
+      const res = await fetch('/api/bills', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ billId, is_paid: true }),
+      })
+      if (res.ok) {
+        setLocalBills((prev) => prev.filter((b) => b.id !== billId))
+        onRefresh?.()
+      }
+    } catch {
+      // Silently fail — bill stays in list
+    } finally {
+      setMarking(null)
+    }
+  }
+
+  async function handleAddBill(e: React.FormEvent) {
+    e.preventDefault()
+    setFormError('')
+
+    const amount = parseFloat(formAmount)
+    if (!formName.trim() || isNaN(amount) || amount <= 0 || !formDate) {
+      setFormError('Fill in all fields with valid values.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/bills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: formName.trim(), amount, dueDate: formDate }),
+      })
+      const data = await res.json()
+      if (res.ok && data.bill) {
+        setLocalBills((prev) =>
+          [...prev, { id: data.bill.id, name: data.bill.name, amount: Number(data.bill.amount), due_date: data.bill.due_date }]
+            .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+        )
+        setFormName('')
+        setFormAmount('')
+        setFormDate('')
+        setShowAddForm(false)
+        onRefresh?.()
+      } else {
+        setFormError(data.error || 'Failed to add bill.')
+      }
+    } catch {
+      setFormError('Network error. Try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (localBills.length === 0 && !showAddForm) {
     return (
       <div className="surface p-5 rounded-xl">
-        <p className="text-section-header mb-3">Upcoming bills</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-section-header">Upcoming bills</p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-1 text-xs text-[#8888A0] hover:text-[#0D7377] transition-colors"
+          >
+            <Plus size={12} /> Add
+          </button>
+        </div>
         <p className="text-[#8888A0] text-sm">
           No upcoming bills in the next 30 days.
         </p>
         <p className="text-[#8888A0] text-xs mt-2">
-          Bills are added automatically when you sync your bank.
+          Bills are added automatically when you sync your bank, or add one manually.
         </p>
       </div>
     )
   }
 
-  const [next, ...rest] = bills
-  const nextDays = daysUntil(next.due_date)
+  const [next, ...rest] = localBills
+  const nextDays = next ? daysUntil(next.due_date) : 0
 
   return (
     <div className="surface p-5 rounded-xl">
-      <p className="text-section-header mb-3">Upcoming bills</p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-section-header">Upcoming bills</p>
+        <button
+          onClick={() => setShowAddForm((v) => !v)}
+          className="flex items-center gap-1 text-xs text-[#8888A0] hover:text-[#0D7377] transition-colors"
+        >
+          {showAddForm ? <X size={12} /> : <Plus size={12} />}
+          {showAddForm ? 'Cancel' : 'Add'}
+        </button>
+      </div>
+
+      {/* Add bill form */}
+      {showAddForm && (
+        <form onSubmit={handleAddBill} className="mb-4 p-3 rounded-lg bg-[#121218] border border-[#2C2C3A] space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Bill name"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              className="flex-1 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377]"
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={formAmount}
+              onChange={(e) => setFormAmount(e.target.value)}
+              step="0.01"
+              min="0"
+              className="w-24 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377]"
+            />
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              type="date"
+              value={formDate}
+              onChange={(e) => setFormDate(e.target.value)}
+              className="flex-1 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] focus:outline-none focus:border-[#0D7377]"
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-3 py-1.5 rounded text-xs font-medium bg-[#0D7377] text-white hover:bg-[#0D7377]/80 disabled:opacity-50 transition-colors"
+            >
+              {submitting ? 'Adding...' : 'Add'}
+            </button>
+          </div>
+          {formError && <p className="text-xs text-[#C75050]">{formError}</p>}
+        </form>
+      )}
 
       {/* Primary — next bill */}
-      <div className="flex items-start justify-between mb-1">
-        <div>
-          <p className="text-[#E8E8EC] font-medium text-sm">{next.name}</p>
-          <p className={`text-xs mt-0.5 ${urgencyColor(nextDays)}`}>
-            {formatDueDate(next.due_date)} — {daysLabel(nextDays)}
-          </p>
+      {next && (
+        <div className="flex items-start justify-between mb-1 group">
+          <div className="flex-1 min-w-0">
+            <p className="text-[#E8E8EC] font-medium text-sm">{next.name}</p>
+            <p className={`text-xs mt-0.5 ${urgencyColor(nextDays)}`}>
+              {formatDueDate(next.due_date)} — {daysLabel(nextDays)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+            <p className="text-amount text-[#E8E8EC] text-sm">
+              {formatNOK(next.amount)}
+            </p>
+            <button
+              onClick={() => handleMarkPaid(next.id)}
+              disabled={marking === next.id}
+              className="p-1 rounded text-[#8888A0] hover:text-[#2D8B6F] hover:bg-[#2D8B6F]/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+              title="Mark as paid"
+            >
+              <Check size={14} />
+            </button>
+          </div>
         </div>
-        <p className="text-amount text-[#E8E8EC] text-sm flex-shrink-0 ml-4">
-          {formatNOK(next.amount)}
-        </p>
-      </div>
+      )}
 
       {/* Remaining bills */}
       {rest.length > 0 && (
@@ -92,16 +233,26 @@ export function BillCountdown({ bills }: Props) {
           {rest.slice(0, 3).map((bill) => {
             const days = daysUntil(bill.due_date)
             return (
-              <div key={bill.id} className="flex items-center justify-between">
+              <div key={bill.id} className="flex items-center justify-between group">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[#E8E8EC] text-xs truncate">{bill.name}</span>
                   <span className={`text-xs flex-shrink-0 ${urgencyColor(days)}`}>
                     {daysLabel(days)}
                   </span>
                 </div>
-                <span className="text-amount text-xs text-[#8888A0] ml-4 flex-shrink-0">
-                  {formatNOK(bill.amount)}
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                  <span className="text-amount text-xs text-[#8888A0]">
+                    {formatNOK(bill.amount)}
+                  </span>
+                  <button
+                    onClick={() => handleMarkPaid(bill.id)}
+                    disabled={marking === bill.id}
+                    className="p-0.5 rounded text-[#8888A0] hover:text-[#2D8B6F] hover:bg-[#2D8B6F]/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                    title="Mark as paid"
+                  >
+                    <Check size={12} />
+                  </button>
+                </div>
               </div>
             )
           })}

@@ -10,6 +10,7 @@
  *   < 1 000 kr  → red    (tight)
  */
 
+import Link from 'next/link'
 import { formatNOK } from '@/lib/utils/format-currency'
 
 interface Props {
@@ -58,12 +59,12 @@ export function SafeToSpend({
       {/* Breakdown — progressive disclosure */}
       {accountCount > 0 && (
         <div className="mt-5 pt-4 border-t border-[#2C2C3A] space-y-1.5">
-          <div className="flex justify-between text-xs">
-            <span className="text-[#8888A0]">
+          <Link href="/accounts" className="flex justify-between text-xs group hover:bg-white/5 -mx-2 px-2 py-1 rounded transition-colors">
+            <span className="text-[#8888A0] group-hover:text-[#E8E8EC] transition-colors">
               Total balance ({accountCount} {accountCount === 1 ? 'account' : 'accounts'})
             </span>
             <span className="text-amount text-sm">{formatNOK(totalBalance)}</span>
-          </div>
+          </Link>
           {totalUpcomingBills > 0 && (
             <div className="flex justify-between text-xs">
               <span className="text-[#8888A0]">Upcoming bills</span>

@@ -28,6 +28,7 @@ interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  timestamp?: string
 }
 
 // Aura's opening message — shown before the user sends anything
@@ -40,7 +41,7 @@ const WELCOME_MESSAGE: Message = {
 interface Props {
   conversations?: ConversationSummary[]
   initialConversationId?: string | null
-  initialMessages?: { role: 'user' | 'assistant'; content: string }[] | null
+  initialMessages?: { role: 'user' | 'assistant'; content: string; created_at?: string }[] | null
 }
 
 /**
@@ -57,7 +58,7 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
 
   // Build initial messages from server data or start fresh
   const startMessages: Message[] = initialMessages
-    ? initialMessages.map((m, i) => ({ id: `loaded-${i}`, role: m.role, content: m.content }))
+    ? initialMessages.map((m, i) => ({ id: `loaded-${i}`, role: m.role, content: m.content, timestamp: m.created_at }))
     : [WELCOME_MESSAGE]
 
   const [messages, setMessages] = useState<Message[]>(startMessages)
@@ -98,9 +99,10 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
 
     setInput('')
 
-    const userMsg: Message = { id: generateId(), role: 'user', content: text }
+    const now = new Date().toISOString()
+    const userMsg: Message = { id: generateId(), role: 'user', content: text, timestamp: now }
     const assistantMsgId = generateId()
-    const assistantMsg: Message = { id: assistantMsgId, role: 'assistant', content: '' }
+    const assistantMsg: Message = { id: assistantMsgId, role: 'assistant', content: '', timestamp: now }
 
     setMessages((prev) => [...prev, userMsg, assistantMsg])
     setIsStreaming(true)
@@ -217,6 +219,7 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
                   role={msg.role}
                   content={msg.content}
                   isTyping={isLastAssistant && msg.content === ''}
+                  timestamp={msg.timestamp}
                 />
               )
             })}
@@ -228,7 +231,7 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
         {/* ── Bottom input area ───────────────────────────────────────── */}
         <div className="border-t border-aura-border bg-aura-background px-4 md:px-6 py-4">
           <div className="max-w-2xl mx-auto flex flex-col gap-3">
-            {!hasInteracted && (
+            {messages.length <= 3 && (
               <QuickActions onSelect={sendMessage} disabled={isStreaming} />
             )}
 

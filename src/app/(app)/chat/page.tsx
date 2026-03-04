@@ -14,6 +14,7 @@ export interface ConversationSummary {
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  created_at?: string
 }
 
 /**
@@ -68,7 +69,7 @@ export default async function ChatPage({
   if (activeConversationId) {
     const { data: msgs } = await supabase
       .from('chat_messages')
-      .select('role, content')
+      .select('role, content, created_at')
       .eq('user_id', user.id)
       .eq('conversation_id', activeConversationId)
       .order('created_at', { ascending: true })
@@ -77,6 +78,7 @@ export default async function ChatPage({
       initialMessages = msgs.map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
+        created_at: m.created_at,
       }))
     }
   }

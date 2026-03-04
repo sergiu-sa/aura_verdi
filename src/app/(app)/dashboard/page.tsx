@@ -8,6 +8,7 @@ import { SpendingChart, type CategorySpend } from '@/components/dashboard/spendi
 import { DailyTip } from '@/components/dashboard/daily-tip'
 import { PartnerOverview } from '@/components/dashboard/partner-overview'
 import { ForecastMini } from '@/components/dashboard/forecast-mini'
+import { SpendingTrend } from '@/components/dashboard/spending-trend'
 import { buildForecast } from '@/lib/forecast/engine'
 
 export const metadata: Metadata = { title: 'Dashboard' }
@@ -18,6 +19,8 @@ async function getDashboardData(userId: string) {
   const supabase = await createClient()
 
   const now = new Date()
+  const oneYearAgo = new Date(now)
+  oneYearAgo.setDate(oneYearAgo.getDate() - 365)
   const thirtyDaysAgo = new Date(now)
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const thirtyDaysAhead = new Date(now)
@@ -43,7 +46,7 @@ async function getDashboardData(userId: string) {
       .from('transactions')
       .select('amount, category, transaction_date')
       .eq('user_id', userId)
-      .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0])
+      .gte('transaction_date', oneYearAgo.toISOString().split('T')[0])
       .order('transaction_date', { ascending: false }),
 
     // Get the most recent sync time from any active bank connection
@@ -56,12 +59,32 @@ async function getDashboardData(userId: string) {
       .limit(1),
   ])
 
+  // Critical failures — throw to trigger error boundary
+  if (accountsRes.error) {
+    throw new Error(`Failed to load accounts: ${accountsRes.error.message}`)
+  }
+  if (transactionsRes.error) {
+    throw new Error(`Failed to load transactions: ${transactionsRes.error.message}`)
+  }
+
+  // Non-critical — log and degrade gracefully
+  if (billsRes.error) {
+    console.error(`[DASHBOARD] Bills query failed for user ${userId}: ${billsRes.error.message}`)
+  }
+  if (syncRes.error) {
+    console.error(`[DASHBOARD] Sync query failed for user ${userId}: ${syncRes.error.message}`)
+  }
+
   const accounts = accountsRes.data ?? []
   const bills = billsRes.data ?? []
-  const transactions = transactionsRes.data ?? []
+  const allTransactions = transactionsRes.data ?? []
   const lastSyncedAt = syncRes.data?.[0]?.last_synced_at ?? null
 
   const hasBank = accounts.length > 0
+
+  // Filter to last 30 days for dashboard metrics (full year used for spending chart)
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0]
+  const transactions = allTransactions.filter((tx) => tx.transaction_date >= thirtyDaysAgoStr)
 
   // ── Compute financial metrics ─────────────────────────────────────────────
 
@@ -69,7 +92,7 @@ async function getDashboardData(userId: string) {
   const totalUpcomingBills = bills.reduce((sum, b) => sum + Number(b.amount), 0)
   const safeToSpend = totalBalance - totalUpcomingBills
 
-  // Separate income and expenses
+  // Separate income and expenses (30-day window)
   const spendingByCategory: Record<string, number> = {}
   let totalMonthlyIncome = 0
   let totalMonthlyExpenses = 0
@@ -144,7 +167,39 @@ async function getDashboardData(userId: string) {
     nextBillDays,
     nextBillAmount: Number(nextBill?.amount ?? 0),
     lastSyncedAt,
+    allTransactions: allTransactions.map((tx) => ({
+      amount: Number(tx.amount),
+      category: tx.category as string | null,
+      transaction_date: tx.transaction_date as string,
+    })),
+    // Monthly spending trend (last 6 months)
+    monthlyTrend: buildMonthlyTrend(allTransactions),
   }
+}
+
+// ── Monthly trend helper ─────────────────────────────────────────────────────
+
+function buildMonthlyTrend(
+  transactions: Array<{ amount: unknown; transaction_date: unknown }>
+): Array<{ month: string; spending: number; income: number }> {
+  const byMonth: Record<string, { spending: number; income: number }> = {}
+
+  for (const tx of transactions) {
+    const amount = Number(tx.amount)
+    const date = String(tx.transaction_date)
+    const month = date.slice(0, 7) // YYYY-MM
+    if (!byMonth[month]) byMonth[month] = { spending: 0, income: 0 }
+    if (amount < 0) {
+      byMonth[month].spending += Math.abs(amount)
+    } else {
+      byMonth[month].income += amount
+    }
+  }
+
+  return Object.entries(byMonth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-6) // last 6 months
+    .map(([month, data]) => ({ month, ...data }))
 }
 
 // ── Partner data ─────────────────────────────────────────────────────────────
@@ -269,7 +324,15 @@ export default async function DashboardPage() {
         <SpendingChart
           data={data.sortedCategories}
           totalExpenses={data.totalMonthlyExpenses}
+          transactions={data.allTransactions}
         />
+
+        {/* ── Spending Trend ───────────────────────────────────────── */}
+        {data.monthlyTrend.length >= 2 && (
+          <div className="sm:col-span-2">
+            <SpendingTrend data={data.monthlyTrend} />
+          </div>
+        )}
 
         {/* ── Partner Overview ───────────────────────────────────────── */}
         {partnerData && (
