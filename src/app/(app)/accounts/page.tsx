@@ -4,8 +4,65 @@ import { createClient } from '@/lib/supabase/server'
 import { formatNOK } from '@/lib/utils/format-currency'
 import { Wallet } from 'lucide-react'
 import Link from 'next/link'
+import { AccountCard, type AccountTransaction } from '@/components/accounts/account-card'
 
 export const metadata: Metadata = { title: 'Accounts' }
+
+// ── Data fetching ─────────────────────────────────────────────────────────────
+
+async function getAccountDetails(
+  userId: string,
+  accountIds: string[]
+): Promise<Map<string, { recentTransactions: AccountTransaction[]; netChange30d: number }>> {
+  if (accountIds.length === 0) return new Map()
+
+  const supabase = await createClient()
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  // Single query for all accounts — uses idx_transactions_account index
+  const { data: transactions } = await supabase
+    .from('transactions')
+    .select('id, account_id, transaction_date, description, amount, category, counterpart_name, is_recurring')
+    .eq('user_id', userId)
+    .in('account_id', accountIds)
+    .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0])
+    .order('transaction_date', { ascending: false })
+
+  // Group by account
+  type TxRow = { id: string; account_id: string; transaction_date: string; description: string | null; amount: number; category: string | null; counterpart_name: string | null; is_recurring: boolean | null }
+  const byAccount = new Map<string, TxRow[]>()
+  for (const id of accountIds) {
+    byAccount.set(id, [])
+  }
+
+  for (const tx of (transactions ?? []) as TxRow[]) {
+    const list = byAccount.get(tx.account_id)
+    if (list) list.push(tx)
+  }
+
+  // Compute per-account details
+  const result = new Map<string, { recentTransactions: AccountTransaction[]; netChange30d: number }>()
+
+  for (const [accountId, txs] of byAccount) {
+    const netChange30d = txs.reduce((sum, tx) => sum + Number(tx.amount), 0)
+    const recentTransactions: AccountTransaction[] = txs.slice(0, 10).map((tx) => ({
+      id: tx.id,
+      transaction_date: tx.transaction_date,
+      description: tx.description,
+      amount: Number(tx.amount),
+      category: tx.category,
+      counterpart_name: tx.counterpart_name,
+      is_recurring: tx.is_recurring ?? false,
+    }))
+
+    result.set(accountId, { recentTransactions, netChange30d })
+  }
+
+  return result
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function AccountsPage() {
   const supabase = await createClient()
@@ -16,7 +73,7 @@ export default async function AccountsPage() {
   const [accountsRes, connectionsRes] = await Promise.all([
     supabase
       .from('accounts')
-      .select('id, account_name, balance, currency, account_type, bank_connection_id')
+      .select('id, account_name, balance, currency, account_type, bank_connection_id, is_shared_with_partner')
       .eq('user_id', user.id)
       .order('balance', { ascending: false }),
 
@@ -31,6 +88,10 @@ export default async function AccountsPage() {
 
   // Build a map of connection ID → bank info
   const bankMap = new Map(connections.map((c) => [c.id, c]))
+
+  // Fetch transaction details for all accounts in a single query
+  const accountIds = accounts.map((a) => a.id)
+  const detailsMap = await getAccountDetails(user.id, accountIds)
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0)
 
@@ -70,54 +131,21 @@ export default async function AccountsPage() {
           <div className="space-y-2">
             {accounts.map((account) => {
               const bank = bankMap.get(account.bank_connection_id)
-              const balance = Number(account.balance)
-              const balanceColor = balance >= 0 ? 'text-[#4DD9A0]' : 'text-[#C75050]'
+              const details = detailsMap.get(account.id)
 
               return (
-                <div
+                <AccountCard
                   key={account.id}
-                  className="surface p-4 rounded-xl flex items-center justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="text-[#E8E8EC] text-sm font-medium truncate">
-                      {account.account_name || 'Unnamed account'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {bank && (
-                        <span className="text-xs text-[#8888A0]">{bank.bank_name}</span>
-                      )}
-                      {account.account_type && (
-                        <>
-                          <span className="text-[#2C2C3A]">·</span>
-                          <span className="text-xs text-[#8888A0] capitalize">{account.account_type}</span>
-                        </>
-                      )}
-                      {bank?.status === 'active' && (
-                        <>
-                          <span className="text-[#2C2C3A]">·</span>
-                          <span className="text-xs text-[#2D8B6F]">Connected</span>
-                        </>
-                      )}
-                      {bank?.status === 'expired' && (
-                        <>
-                          <span className="text-[#2C2C3A]">·</span>
-                          <span className="text-xs text-[#D4A039]">Expired</span>
-                        </>
-                      )}
-                    </div>
-                    {bank?.last_synced_at && (
-                      <p className="text-[10px] text-[#55556A] mt-1">
-                        Last synced: {new Date(bank.last_synced_at).toLocaleDateString('nb-NO', {
-                          day: '2-digit', month: '2-digit', year: 'numeric',
-                          hour: '2-digit', minute: '2-digit',
-                        })}
-                      </p>
-                    )}
-                  </div>
-                  <p className={`font-display text-lg flex-shrink-0 ml-4 ${balanceColor}`}>
-                    {formatNOK(balance)}
-                  </p>
-                </div>
+                  accountName={account.account_name}
+                  accountType={account.account_type}
+                  balance={Number(account.balance)}
+                  bankName={bank?.bank_name ?? null}
+                  bankStatus={bank?.status ?? null}
+                  lastSyncedAt={bank?.last_synced_at ?? null}
+                  recentTransactions={details?.recentTransactions ?? []}
+                  netChange30d={details?.netChange30d ?? 0}
+                  isSharedWithPartner={account.is_shared_with_partner ?? false}
+                />
               )
             })}
           </div>
