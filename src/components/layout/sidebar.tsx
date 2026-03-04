@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils/cn'
 import {
   LayoutDashboard,
   TrendingUp,
+  ArrowLeftRight,
   MessageCircle,
   FileText,
   Scale,
@@ -38,6 +39,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/forecast',
     icon: TrendingUp,
     description: 'Cash flow projection',
+  },
+  {
+    label: 'Transactions',
+    href: '/transactions',
+    icon: ArrowLeftRight,
+    description: 'Bank transactions',
   },
   {
     label: 'Chat',

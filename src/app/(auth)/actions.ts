@@ -130,6 +130,84 @@ export async function signUp(
   redirect('/dashboard')
 }
 
+// ── Request Password Reset ─────────────────────────────────────────────────
+
+const ResetRequestSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+})
+
+/**
+ * Server Action: Send a password reset email.
+ * Always returns a success message (even if email doesn't exist — prevents enumeration).
+ */
+export async function requestPasswordReset(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const parsed = ResetRequestSchema.safeParse({
+    email: formData.get('email'),
+  })
+
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0].message }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/reset-password`,
+  })
+
+  if (error) {
+    console.error(`[AUTH] Password reset error: ${error.message}`)
+  }
+
+  // Always show success — don't reveal whether email exists
+  return {
+    message: `If an account exists for ${parsed.data.email}, you'll receive a reset link shortly.`,
+  }
+}
+
+// ── Update Password ───────────────────────────────────────────────────────
+
+const UpdatePasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password is too long'),
+})
+
+/**
+ * Server Action: Set a new password after clicking the reset email link.
+ * The user arrives at /reset-password with a valid Supabase session from the token.
+ */
+export async function updatePassword(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const parsed = UpdatePasswordSchema.safeParse({
+    password: formData.get('password'),
+  })
+
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0].message }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  })
+
+  if (error) {
+    if (error.message.includes('same_password')) {
+      return { error: 'New password must be different from your current password.' }
+    }
+    return { error: 'Failed to update password. The reset link may have expired — try again.' }
+  }
+
+  redirect('/dashboard')
+}
+
 // ── Sign Out ───────────────────────────────────────────────────────────────
 
 /**

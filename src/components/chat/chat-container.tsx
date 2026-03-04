@@ -1,27 +1,28 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 
 /**
  * UUID generator that works in both SSR (Node.js) and browser contexts.
- * generateId() is available in Node 19+ and modern browsers,
- * but the global may not be wired up the same way in all SSR environments.
  */
 function generateId(): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
     return globalThis.crypto.randomUUID()
   }
-  // RFC 4122 v4 UUID fallback — safe for all environments
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
     const v = c === 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
 }
-import { RotateCcw } from 'lucide-react'
+
+import { RotateCcw, History } from 'lucide-react'
 import { MessageBubble } from './message-bubble'
 import { ChatInput } from './chat-input'
 import { QuickActions } from './quick-actions'
+import { ConversationList } from './conversation-list'
+import type { ConversationSummary } from '@/app/(app)/chat/page'
 
 interface Message {
   id: string
@@ -36,26 +37,38 @@ const WELCOME_MESSAGE: Message = {
   content: "Hei! I'm Aura, your personal financial guardian.\n\nI can help you understand your spending, plan for upcoming bills, navigate legal letters, and answer any financial questions — with full awareness of the Norwegian context.\n\nTo get the most out of me, connect your bank account in Settings. Or just ask me anything right now.",
 }
 
+interface Props {
+  conversations?: ConversationSummary[]
+  initialConversationId?: string | null
+  initialMessages?: { role: 'user' | 'assistant'; content: string }[] | null
+}
+
 /**
  * Main chat interface — handles all state and communication with /api/chat.
  *
  * Architecture:
- * - Each page load = one conversation (fresh UUID)
+ * - Supports both new conversations (fresh UUID) and resumed ones (from URL ?c=)
+ * - Conversation list panel toggles on the left
  * - User sends message → POST to /api/chat (streaming response)
- * - Streaming text appears character-by-character in the assistant bubble
  * - Both messages saved to Supabase via the API route
  */
-export function ChatContainer() {
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
+export function ChatContainer({ conversations = [], initialConversationId, initialMessages }: Props) {
+  const router = useRouter()
+
+  // Build initial messages from server data or start fresh
+  const startMessages: Message[] = initialMessages
+    ? initialMessages.map((m, i) => ({ id: `loaded-${i}`, role: m.role, content: m.content }))
+    : [WELCOME_MESSAGE]
+
+  const [messages, setMessages] = useState<Message[]>(startMessages)
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   // Stable conversation ID for this session
-  const conversationIdRef = useRef(generateId())
-  // Scroll anchor — always scroll to the bottom after new messages
+  const conversationIdRef = useRef(initialConversationId ?? generateId())
   const bottomRef = useRef<HTMLDivElement>(null)
-  // Track whether there's been any real interaction (to hide quick actions)
-  const hasInteracted = messages.length > 1
+  const hasInteracted = initialMessages ? messages.length > 0 : messages.length > 1
 
   // Auto-scroll to bottom on every new message or streaming update
   useEffect(() => {
@@ -67,7 +80,17 @@ export function ChatContainer() {
     setMessages([WELCOME_MESSAGE])
     setInput('')
     conversationIdRef.current = generateId()
-  }, [isStreaming])
+    setShowHistory(false)
+    // Update URL without the ?c= param
+    router.push('/chat')
+  }, [isStreaming, router])
+
+  const handleSelectConversation = useCallback((id: string) => {
+    if (isStreaming) return
+    setShowHistory(false)
+    // Navigate to the conversation — server will fetch messages
+    router.push(`/chat?c=${id}`)
+  }, [isStreaming, router])
 
   const sendMessage = useCallback(async (content: string) => {
     const text = content.trim()
@@ -75,9 +98,7 @@ export function ChatContainer() {
 
     setInput('')
 
-    // Add user message to UI immediately
     const userMsg: Message = { id: generateId(), role: 'user', content: text }
-    // Add empty assistant message as placeholder (will be filled by stream)
     const assistantMsgId = generateId()
     const assistantMsg: Message = { id: assistantMsgId, role: 'assistant', content: '' }
 
@@ -95,7 +116,6 @@ export function ChatContainer() {
       })
 
       if (!response.ok) {
-        // Try to parse error from JSON response
         let errMsg = 'Something went wrong. Please try again.'
         try {
           const data = await response.json()
@@ -106,7 +126,6 @@ export function ChatContainer() {
           errMsg = "You're sending messages too quickly. Please wait a moment."
         }
 
-        // Replace the empty assistant placeholder with the error
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMsgId ? { ...m, content: errMsg } : m
@@ -115,7 +134,6 @@ export function ChatContainer() {
         return
       }
 
-      // Read streaming response
       const reader = response.body!.getReader()
       const decoder = new TextDecoder()
       let accumulated = ''
@@ -126,7 +144,6 @@ export function ChatContainer() {
 
         accumulated += decoder.decode(value, { stream: true })
 
-        // Update the assistant message in-place as text streams in
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMsgId ? { ...m, content: accumulated } : m
@@ -146,67 +163,90 @@ export function ChatContainer() {
   }, [isStreaming])
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full">
 
-      {/* ── Message list ───────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
-        <div className="max-w-2xl mx-auto flex flex-col gap-4">
-          {/* New conversation button — only after interaction */}
-          {hasInteracted && (
-            <div className="flex justify-end -mb-2">
-              <button
-                onClick={handleNewConversation}
-                disabled={isStreaming}
-                className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors disabled:opacity-50"
-              >
-                <RotateCcw size={12} />
-                New conversation
-              </button>
-            </div>
-          )}
-
-          {messages.map((msg, i) => {
-            // Show typing indicator on the last assistant message while streaming
-            const isLastAssistant =
-              i === messages.length - 1 && msg.role === 'assistant' && isStreaming
-
-            return (
-              <MessageBubble
-                key={msg.id}
-                role={msg.role}
-                content={msg.content}
-                isTyping={isLastAssistant && msg.content === ''}
-              />
-            )
-          })}
-
-          {/* Scroll anchor */}
-          <div ref={bottomRef} />
-        </div>
-      </div>
-
-      {/* ── Bottom input area ───────────────────────────────────────── */}
-      <div className="border-t border-aura-border bg-aura-background px-4 md:px-6 py-4">
-        <div className="max-w-2xl mx-auto flex flex-col gap-3">
-          {/* Quick action chips — only shown before first interaction */}
-          {!hasInteracted && (
-            <QuickActions onSelect={sendMessage} disabled={isStreaming} />
-          )}
-
-          <ChatInput
-            value={input}
-            onChange={setInput}
-            onSubmit={() => sendMessage(input)}
-            disabled={isStreaming}
+      {/* ── Conversation list panel ────────────────────────────────── */}
+      {showHistory && (
+        <div className="w-64 flex-shrink-0 absolute md:relative z-30 h-full">
+          <ConversationList
+            conversations={conversations}
+            activeId={initialConversationId ?? null}
+            onSelect={handleSelectConversation}
+            onNewConversation={handleNewConversation}
+            onClose={() => setShowHistory(false)}
           />
-
-          <p className="text-center text-[10px] text-aura-text-dim">
-            Aura is not a lawyer or licensed financial advisor.
-            Always verify important decisions with a qualified professional.
-          </p>
         </div>
-      </div>
+      )}
 
+      {/* ── Main chat area ─────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* ── Message list ───────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
+          <div className="max-w-2xl mx-auto flex flex-col gap-4">
+            {/* Chat toolbar */}
+            <div className="flex justify-between -mb-2">
+              {conversations.length > 0 && (
+                <button
+                  onClick={() => setShowHistory((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors"
+                >
+                  <History size={12} />
+                  History
+                </button>
+              )}
+              {hasInteracted && (
+                <button
+                  onClick={handleNewConversation}
+                  disabled={isStreaming}
+                  className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors disabled:opacity-50 ml-auto"
+                >
+                  <RotateCcw size={12} />
+                  New conversation
+                </button>
+              )}
+            </div>
+
+            {messages.map((msg, i) => {
+              const isLastAssistant =
+                i === messages.length - 1 && msg.role === 'assistant' && isStreaming
+
+              return (
+                <MessageBubble
+                  key={msg.id}
+                  role={msg.role}
+                  content={msg.content}
+                  isTyping={isLastAssistant && msg.content === ''}
+                />
+              )
+            })}
+
+            <div ref={bottomRef} />
+          </div>
+        </div>
+
+        {/* ── Bottom input area ───────────────────────────────────────── */}
+        <div className="border-t border-aura-border bg-aura-background px-4 md:px-6 py-4">
+          <div className="max-w-2xl mx-auto flex flex-col gap-3">
+            {!hasInteracted && (
+              <QuickActions onSelect={sendMessage} disabled={isStreaming} />
+            )}
+
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={() => sendMessage(input)}
+              disabled={isStreaming}
+            />
+
+            <p className="text-center text-[10px] text-aura-text-dim">
+              Aura is not a lawyer or licensed financial advisor.
+              Always verify important decisions with a qualified professional.
+            </p>
+          </div>
+        </div>
+
+      </div>
     </div>
   )
 }

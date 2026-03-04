@@ -14,7 +14,7 @@
  */
 
 import { useState } from 'react'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, Trash2 } from 'lucide-react'
 import { RedactionPreview } from './redaction-preview'
 import { AddExpenseDialog } from './add-expense-dialog'
 import type { PIIDetection } from '@/lib/redaction/pii-detector'
@@ -100,9 +100,26 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
   const [expanded, setExpanded] = useState(false)
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [showRedactionPreview, setShowRedactionPreview] = useState(
     doc.status === 'pii_detected'
   )
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/documents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: doc.id }),
+      })
+      if (res.ok) onRefresh()
+    } finally {
+      setDeleting(false)
+      setConfirmDelete(false)
+    }
+  }
 
   const urgency = doc.ai_flags?.urgency
   const urgencyConfig = urgency ? URGENCY_CONFIG[urgency] : null
@@ -124,8 +141,8 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
             </p>
           </div>
 
-          {/* Status badge */}
-          <div className="flex-shrink-0 text-right">
+          {/* Status badge + delete */}
+          <div className="flex-shrink-0 flex items-center gap-2">
             {doc.status === 'pii_detected' && (
               <span className="text-xs text-[#D4A039]">🛡️ Review PII</span>
             )}
@@ -141,9 +158,41 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
             {doc.status === 'error' && (
               <span className="text-xs text-[#C75050]">Failed</span>
             )}
+            {!isInProgress && (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="text-[#55556A] hover:text-[#C75050] transition-colors p-1"
+                title="Delete document"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* ── Delete confirmation ───────────────────────────────────────────── */}
+      {confirmDelete && (
+        <div className="px-4 pb-3 flex items-center justify-between gap-3 border-t border-[#2C2C3A] pt-3">
+          <p className="text-xs text-[#C75050]">Delete this document permanently?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+              className="text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors px-2 py-1"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs text-[#C75050] hover:text-white bg-[#C75050]/20 hover:bg-[#C75050]/40 px-3 py-1 rounded transition-colors disabled:opacity-50"
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Privacy Shield review (pii_detected) ────────────────────────── */}
       {doc.status === 'pii_detected' && showRedactionPreview && doc.extracted_text && (

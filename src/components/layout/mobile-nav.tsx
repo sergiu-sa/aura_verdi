@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils/cn'
 import {
   LayoutDashboard,
   TrendingUp,
+  ArrowLeftRight,
   MessageCircle,
   FileText,
-  Settings,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -22,8 +22,8 @@ const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Forecast', href: '/forecast', icon: TrendingUp },
   { label: 'Chat', href: '/chat', icon: MessageCircle },
+  { label: 'Txns', href: '/transactions', icon: ArrowLeftRight },
   { label: 'Docs', href: '/documents', icon: FileText },
-  { label: 'Settings', href: '/settings', icon: Settings },
 ]
 
 /**
