@@ -51,16 +51,21 @@ export async function GET(request: Request) {
       totalCreated += created
 
       // 2. Send emails for pending critical notifications
-      if (isQuietHours(prefs)) continue // respect quiet hours
+      const quietHours = isQuietHours(prefs)
 
       const { data: pendingEmails } = await supabase
         .from('notifications')
-        .select('id, title, message')
+        .select('id, title, message, bypass_quiet_hours')
         .eq('user_id', user.id)
         .eq('is_emailed', false)
         .in('channel', ['email', 'both'])
 
-      if (!pendingEmails?.length) continue
+      // During quiet hours, only send notifications that bypass quiet hours
+      const eligibleEmails = quietHours
+        ? (pendingEmails || []).filter((n) => n.bypass_quiet_hours === true)
+        : pendingEmails || []
+
+      if (!eligibleEmails.length) continue
       if (!(await canSendEmail(supabase, user.id))) continue
 
       // Get user's email from Supabase Auth
@@ -73,7 +78,7 @@ export async function GET(request: Request) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
 
-      for (const notif of pendingEmails) {
+      for (const notif of eligibleEmails) {
         const resendId = await sendNotificationEmail({
           userId: user.id,
           userEmail: authUser.user.email,

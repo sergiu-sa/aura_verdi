@@ -35,7 +35,7 @@ async function getDashboardData(userId: string) {
 
     supabase
       .from('bills_upcoming')
-      .select('id, name, amount, due_date')
+      .select('id, name, amount, due_date, priority')
       .eq('user_id', userId)
       .eq('is_paid', false)
       .gte('due_date', now.toISOString().split('T')[0])
@@ -91,6 +91,10 @@ async function getDashboardData(userId: string) {
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0)
   const totalUpcomingBills = bills.reduce((sum, b) => sum + Number(b.amount), 0)
   const safeToSpend = totalBalance - totalUpcomingBills
+  const criticalBillsTotal = bills
+    .filter((b) => b.priority === 'critical')
+    .reduce((sum, b) => sum + Number(b.amount), 0)
+  const safeAfterCritical = totalBalance - criticalBillsTotal
 
   // Separate income and expenses (30-day window)
   const spendingByCategory: Record<string, number> = {}
@@ -156,6 +160,7 @@ async function getDashboardData(userId: string) {
     totalBalance,
     totalUpcomingBills,
     safeToSpend,
+    safeAfterCritical,
     totalMonthlyIncome,
     totalMonthlyExpenses,
     healthStatus,
@@ -283,6 +288,7 @@ export default async function DashboardPage() {
           {data.hasBank ? (
             <SafeToSpend
               safeToSpend={data.safeToSpend}
+              safeAfterCritical={data.safeAfterCritical}
               totalBalance={data.totalBalance}
               totalUpcomingBills={data.totalUpcomingBills}
               accountCount={data.accounts.length}

@@ -1,7 +1,7 @@
 /**
  * Supabase database types.
  *
- * Manually maintained to match migrations 001–007.
+ * Manually maintained to match migrations 001–010.
  * If schema drifts, regenerate with:
  *   npx supabase gen types typescript --project-id YOUR_PROJECT_ID
  */
@@ -109,9 +109,13 @@ export type Database = {
           is_paid: boolean
           category: string | null
           recurrence: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
+          priority: 'critical' | 'high' | 'normal' | 'low'
+          source_document_id: string | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['bills_upcoming']['Row'], 'id' | 'created_at'>
+        Insert: Omit<Database['public']['Tables']['bills_upcoming']['Row'], 'id' | 'created_at'> & {
+          priority?: 'critical' | 'high' | 'normal' | 'low'
+        }
         Update: Partial<Database['public']['Tables']['bills_upcoming']['Insert']>
       }
       documents: {
@@ -165,12 +169,15 @@ export type Database = {
           notification_key: string
           is_read: boolean
           is_emailed: boolean
+          bypass_quiet_hours: boolean
           related_entity_type: string | null
           related_entity_id: string | null
           created_at: string
           expires_at: string | null
         }
-        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at' | 'is_read' | 'is_emailed'>
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at' | 'is_read' | 'is_emailed' | 'bypass_quiet_hours'> & {
+          bypass_quiet_hours?: boolean
+        }
         Update: Partial<Database['public']['Tables']['notifications']['Insert']> & {
           is_read?: boolean
           is_emailed?: boolean

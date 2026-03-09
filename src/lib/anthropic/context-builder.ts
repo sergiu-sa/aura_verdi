@@ -104,7 +104,7 @@ export async function buildFinancialContext(
 
     supabase
       .from('bills_upcoming')
-      .select('name, amount, due_date')
+      .select('name, amount, due_date, priority')
       .eq('user_id', userId)
       .eq('is_paid', false)
       .lte('due_date', thirtyDaysAhead.toISOString().split('T')[0])
@@ -199,7 +199,8 @@ Expenses last 30 days: ${formatNOK(totalMonthlyExpenses)}
     context += `\nUpcoming bills (next 30 days):\n`
     for (const b of bills) {
       const dueDate = new Date(b.due_date).toLocaleDateString('nb-NO')
-      context += `- ${b.name}: ${formatNOK(Number(b.amount))} — due ${dueDate}\n`
+      const priorityTag = b.priority && b.priority !== 'normal' ? ` [priority: ${b.priority}]` : ''
+      context += `- ${b.name}: ${formatNOK(Number(b.amount))} — due ${dueDate}${priorityTag}\n`
     }
   } else {
     context += `\nNo upcoming bills recorded.\n`

@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/utils/rate-limiter'
+import { BILL_PRIORITIES } from '@/lib/constants/bill-priority'
 
 const CreateBillSchema = z.object({
   name: z.string().min(1).max(200),
@@ -18,6 +19,7 @@ const CreateBillSchema = z.object({
   category: z.string().max(50).nullable().optional(),
   recurrence: z.enum(['once', 'weekly', 'monthly', 'quarterly', 'yearly']).default('once'),
   sourceDocumentId: z.string().uuid().nullable().optional(),
+  priority: z.enum(BILL_PRIORITIES).default('normal'),
 })
 
 export async function POST(request: Request) {
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input.' }, { status: 400 })
   }
 
-  const { name, amount, dueDate, category, recurrence, sourceDocumentId } = parsed.data
+  const { name, amount, dueDate, category, recurrence, sourceDocumentId, priority } = parsed.data
 
   try {
     // 4. VALIDATE SOURCE DOCUMENT (if provided) — must belong to this user
@@ -92,8 +94,9 @@ export async function POST(request: Request) {
         category: category ?? null,
         recurrence,
         source_document_id: sourceDocumentId ?? null,
+        priority,
       })
-      .select('id, name, amount, due_date')
+      .select('id, name, amount, due_date, priority')
       .single()
 
     if (insertError) {
@@ -112,7 +115,8 @@ export async function POST(request: Request) {
 
 const PatchBillSchema = z.object({
   billId: z.string().uuid(),
-  is_paid: z.boolean(),
+  is_paid: z.boolean().optional(),
+  priority: z.enum(BILL_PRIORITIES).optional(),
 })
 
 export async function PATCH(request: Request) {
@@ -139,16 +143,28 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const { billId, is_paid } = parsed.data
-    const { error: updateError } = await supabase
+    const { billId, is_paid, priority } = parsed.data
+    const updateFields: Record<string, unknown> = {}
+    if (is_paid !== undefined) updateFields.is_paid = is_paid
+    if (priority !== undefined) updateFields.priority = priority
+
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json({ error: 'No fields to update.' }, { status: 400 })
+    }
+
+    const { error: updateError, count } = await supabase
       .from('bills_upcoming')
-      .update({ is_paid })
+      .update(updateFields, { count: 'exact' })
       .eq('id', billId)
       .eq('user_id', user.id)
 
     if (updateError) {
       console.error(`[BILLS] PATCH error for user ${user.id}:`, updateError.message)
       return NextResponse.json({ error: 'Failed to update bill.' }, { status: 500 })
+    }
+
+    if (count === 0) {
+      return NextResponse.json({ error: 'Bill not found.' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true })

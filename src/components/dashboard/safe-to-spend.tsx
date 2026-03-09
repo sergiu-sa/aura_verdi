@@ -1,10 +1,11 @@
 /**
- * SafeToSpend — THE primary number on the dashboard.
+ * SafeToSpend — THE primary numbers on the dashboard.
  *
- * Design principle: ONE number that matters. This is it.
- * Shows what you can spend today without missing any upcoming bills.
+ * Shows two safe-to-spend figures:
+ *   1. After critical bills only (primary, large)
+ *   2. After all bills (secondary, smaller)
  *
- * Color coding:
+ * Color coding (based on safeAfterCritical):
  *   > 5 000 kr  → green  (comfortable)
  *   1 000–5 000 → amber  (watch it)
  *   < 1 000 kr  → red    (tight)
@@ -15,31 +16,35 @@ import { formatNOK } from '@/lib/utils/format-currency'
 
 interface Props {
   safeToSpend: number
+  safeAfterCritical: number
   totalBalance: number
   totalUpcomingBills: number
   accountCount: number
 }
 
+function amountColorClass(amount: number): string {
+  if (amount > 5_000) return 'text-[#4DD9A0]'
+  if (amount > 1_000) return 'text-[#D4A039]'
+  return 'text-[#C75050]'
+}
+
 export function SafeToSpend({
   safeToSpend,
+  safeAfterCritical,
   totalBalance,
   totalUpcomingBills,
   accountCount,
 }: Props) {
-  // Color based on how comfortable the buffer is
-  const amountColor =
-    safeToSpend > 5_000
-      ? 'text-[#4DD9A0]'   // comfortable — soft green
-      : safeToSpend > 1_000
-        ? 'text-[#D4A039]' // watch it — amber
-        : 'text-[#C75050]' // tight — muted red
+  const hasCriticalBills = safeAfterCritical !== totalBalance
+  const primaryAmount = hasCriticalBills ? safeAfterCritical : safeToSpend
+  const primaryLabel = hasCriticalBills ? 'After critical bills' : 'Safe to spend'
 
   const statusText =
-    safeToSpend > 5_000
+    primaryAmount > 5_000
       ? 'Looking good'
-      : safeToSpend > 1_000
+      : primaryAmount > 1_000
         ? 'Spend carefully'
-        : safeToSpend > 0
+        : primaryAmount > 0
           ? 'Very tight'
           : 'Bills exceed balance'
 
@@ -48,10 +53,25 @@ export function SafeToSpend({
       {/* Label */}
       <p className="text-section-header mb-3">Safe to spend</p>
 
-      {/* THE number */}
-      <p className={`font-display text-5xl md:text-6xl font-normal tracking-tight leading-none ${amountColor}`}>
-        {formatNOK(Math.max(0, safeToSpend))}
-      </p>
+      {/* Primary number */}
+      <div className="mb-1">
+        {hasCriticalBills && (
+          <p className="text-[#8888A0] text-xs mb-1">{primaryLabel}</p>
+        )}
+        <p className={`font-display text-5xl md:text-6xl font-normal tracking-tight leading-none ${amountColorClass(primaryAmount)}`}>
+          {formatNOK(Math.max(0, primaryAmount))}
+        </p>
+      </div>
+
+      {/* Secondary: after all bills (only when critical bills exist) */}
+      {hasCriticalBills && (
+        <div className="mt-3">
+          <p className="text-[#8888A0] text-xs mb-1">After all bills</p>
+          <p className={`font-display text-3xl font-normal tracking-tight leading-none ${amountColorClass(safeToSpend)}`}>
+            {formatNOK(Math.max(0, safeToSpend))}
+          </p>
+        </div>
+      )}
 
       {/* Status line */}
       <p className="text-[#8888A0] text-sm mt-3">{statusText}</p>

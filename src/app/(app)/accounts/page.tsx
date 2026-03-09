@@ -5,6 +5,7 @@ import { formatNOK } from '@/lib/utils/format-currency'
 import { Wallet } from 'lucide-react'
 import Link from 'next/link'
 import { AccountCard, type AccountTransaction } from '@/components/accounts/account-card'
+import { BalanceDistribution } from '@/components/accounts/balance-distribution'
 
 export const metadata: Metadata = { title: 'Accounts' }
 
@@ -126,6 +127,15 @@ export default async function AccountsPage() {
               <p className="font-display text-2xl text-[#E8E8EC]">{formatNOK(totalBalance)}</p>
             </div>
           </div>
+
+          {/* Balance distribution bar */}
+          <BalanceDistribution
+            accounts={accounts.map((a) => ({
+              id: a.id,
+              account_name: a.account_name ?? 'Account',
+              balance: Number(a.balance),
+            }))}
+          />
 
           {/* Account list */}
           <div className="space-y-2">

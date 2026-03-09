@@ -21,6 +21,7 @@ interface NotificationInput {
   related_entity_type?: string
   related_entity_id?: string
   expires_at?: string
+  bypass_quiet_hours?: boolean
 }
 
 export async function runNotificationChecks(
@@ -66,6 +67,42 @@ export async function runNotificationChecks(
         related_entity_type: 'bill',
         related_entity_id: bill.id,
         expires_at: new Date(new Date(bill.due_date).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+      })
+    }
+  }
+
+  // ── CHECK 1b: Critical-priority bills due within 7 days ─────────────────
+  if (prefs.bill_reminders !== false) {
+    const { data: criticalBills } = await supabase
+      .from('bills_upcoming')
+      .select('id, name, due_date')
+      .eq('user_id', userId)
+      .eq('is_paid', false)
+      .eq('priority', 'critical')
+      .lte('due_date', sevenDays.toISOString().split('T')[0])
+      .gte('due_date', todayStr)
+
+    for (const bill of criticalBills || []) {
+      const todayMidnight = new Date(now)
+      todayMidnight.setHours(0, 0, 0, 0)
+      const dueMidnight = new Date(bill.due_date)
+      dueMidnight.setHours(0, 0, 0, 0)
+      const daysOut = Math.round(
+        (dueMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysOut <= 2) continue // already covered by CHECK 1
+
+      notifications.push({
+        type: 'bill_due',
+        urgency: 'critical',
+        title: 'Critical bill due soon',
+        message: `A critical-priority bill is due in ${daysOut} days. Open Aura to review.`,
+        channel: emailChannel,
+        notification_key: `bill_due_critical_early:${bill.id}:${bill.due_date}`,
+        related_entity_type: 'bill',
+        related_entity_id: bill.id,
+        expires_at: new Date(new Date(bill.due_date).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        bypass_quiet_hours: true,
       })
     }
   }
