@@ -56,6 +56,18 @@ function formatDate(iso: string | null): string {
   })
 }
 
+function consentExpiryInfo(expiresAt: string | null): { text: string; color: string } | null {
+  if (!expiresAt) return null
+  const now = new Date()
+  const expiry = new Date(expiresAt)
+  const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (daysLeft < 0) return { text: 'Consent expired', color: 'text-aura-danger' }
+  if (daysLeft <= 7) return { text: `Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`, color: 'text-aura-danger' }
+  if (daysLeft <= 30) return { text: `Expires in ${daysLeft} days`, color: 'text-aura-warning' }
+  return null
+}
+
 function statusLabel(status: BankConnection['status']): {
   text: string
   color: string
@@ -276,11 +288,18 @@ export function BankConnectionSection({
                   <p className="text-xs text-aura-text-secondary mt-1">
                     Last synced: {formatDate(conn.last_synced_at)}
                   </p>
-                  {conn.consent_expires_at && (
-                    <p className="text-xs text-aura-text-secondary">
-                      Consent expires: {formatDate(conn.consent_expires_at)}
-                    </p>
-                  )}
+                  {conn.consent_expires_at && (() => {
+                    const expiry = consentExpiryInfo(conn.consent_expires_at)
+                    return expiry ? (
+                      <p className={`text-xs font-medium ${expiry.color}`}>
+                        {expiry.text} — {formatDate(conn.consent_expires_at)}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-aura-text-secondary">
+                        Consent expires: {formatDate(conn.consent_expires_at)}
+                      </p>
+                    )
+                  })()}
                 </div>
                 {conn.status === 'active' && (
                   <div className="flex gap-1">

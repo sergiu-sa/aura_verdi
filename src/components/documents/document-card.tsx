@@ -14,7 +14,7 @@
  */
 
 import { useState } from 'react'
-import { Plus, Check, Trash2 } from 'lucide-react'
+import { Plus, Check, Trash2, Download } from 'lucide-react'
 import { RedactionPreview } from './redaction-preview'
 import { AddExpenseDialog } from './add-expense-dialog'
 import type { PIIDetection } from '@/lib/redaction/pii-detector'
@@ -102,9 +102,23 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
   const [justAdded, setJustAdded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [showRedactionPreview, setShowRedactionPreview] = useState(
     doc.status === 'pii_detected'
   )
+
+  async function handleDownload() {
+    setDownloading(true)
+    try {
+      const res = await fetch(`/api/documents/download?id=${doc.id}`)
+      const data = await res.json()
+      if (res.ok && data.url) {
+        window.open(data.url, '_blank')
+      }
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   async function handleDelete() {
     setDeleting(true)
@@ -159,13 +173,23 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
               <span className="text-xs text-aura-danger">Failed</span>
             )}
             {!isInProgress && (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="text-aura-text-dim hover:text-aura-danger transition-colors p-1"
-                title="Delete document"
-              >
-                <Trash2 size={14} />
-              </button>
+              <>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="text-aura-text-dim hover:text-aura-primary transition-colors p-1 disabled:opacity-50"
+                  title="Download original"
+                >
+                  <Download size={14} />
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-aura-text-dim hover:text-aura-danger transition-colors p-1"
+                  title="Delete document"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </>
             )}
           </div>
         </div>

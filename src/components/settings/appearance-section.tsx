@@ -1,11 +1,15 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import { Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 export function AppearanceSection() {
   const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => setMounted(true), [])
 
   return (
     <section className="surface p-6 rounded-xl mb-6">
@@ -16,7 +20,7 @@ export function AppearanceSection() {
           onClick={() => setTheme('light')}
           className={cn(
             'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm transition-colors',
-            resolvedTheme === 'light'
+            mounted && resolvedTheme === 'light'
               ? 'border-aura-primary bg-aura-primary/10 text-aura-text'
               : 'border-aura-border text-aura-text-secondary hover:text-aura-text hover:border-aura-text-secondary'
           )}
@@ -28,7 +32,7 @@ export function AppearanceSection() {
           onClick={() => setTheme('dark')}
           className={cn(
             'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm transition-colors',
-            resolvedTheme === 'dark'
+            mounted && resolvedTheme === 'dark'
               ? 'border-aura-primary bg-aura-primary/10 text-aura-text'
               : 'border-aura-border text-aura-text-secondary hover:text-aura-text hover:border-aura-text-secondary'
           )}
