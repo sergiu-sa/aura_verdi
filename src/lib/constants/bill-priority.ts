@@ -13,22 +13,22 @@ export const PRIORITY_META: Record<
 > = {
   critical: {
     label: 'Critical',
-    badgeClass: 'bg-[#C75050]/15 text-[#C75050] border border-[#C75050]/30',
-    dotClass: 'bg-[#C75050]',
+    badgeClass: 'bg-aura-danger/15 text-aura-danger border border-aura-danger/30',
+    dotClass: 'bg-aura-danger',
   },
   high: {
     label: 'High',
-    badgeClass: 'bg-[#D4A039]/15 text-[#D4A039] border border-[#D4A039]/30',
-    dotClass: 'bg-[#D4A039]',
+    badgeClass: 'bg-aura-warning/15 text-aura-warning border border-aura-warning/30',
+    dotClass: 'bg-aura-warning',
   },
   normal: {
     label: 'Normal',
-    badgeClass: 'bg-[#8888A0]/10 text-[#8888A0] border border-[#8888A0]/20',
-    dotClass: 'bg-[#8888A0]',
+    badgeClass: 'bg-aura-text-secondary/10 text-aura-text-secondary border border-aura-text-secondary/20',
+    dotClass: 'bg-aura-text-secondary',
   },
   low: {
     label: 'Low',
-    badgeClass: 'bg-[#2D8B6F]/10 text-[#2D8B6F] border border-[#2D8B6F]/20',
-    dotClass: 'bg-[#2D8B6F]',
+    badgeClass: 'bg-aura-safe/10 text-aura-safe border border-aura-safe/20',
+    dotClass: 'bg-aura-safe',
   },
 }

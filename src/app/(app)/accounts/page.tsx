@@ -106,9 +106,9 @@ export default async function AccountsPage() {
 
       {accounts.length === 0 ? (
         <div className="surface p-8 rounded-xl text-center">
-          <Wallet size={32} className="text-[#8888A0] mx-auto mb-3" />
-          <p className="text-[#E8E8EC] text-sm font-medium mb-2">No accounts connected</p>
-          <p className="text-[#8888A0] text-xs mb-4">
+          <Wallet size={32} className="text-aura-text-secondary mx-auto mb-3" />
+          <p className="text-aura-text text-sm font-medium mb-2">No accounts connected</p>
+          <p className="text-aura-text-secondary text-xs mb-4">
             Connect your bank in Settings to see your accounts and balances.
           </p>
           <Link
@@ -123,8 +123,8 @@ export default async function AccountsPage() {
           {/* Total balance header */}
           <div className="surface p-5 rounded-xl mb-4">
             <div className="flex items-center justify-between">
-              <p className="text-[#8888A0] text-sm">Total balance</p>
-              <p className="font-display text-2xl text-[#E8E8EC]">{formatNOK(totalBalance)}</p>
+              <p className="text-aura-text-secondary text-sm">Total balance</p>
+              <p className="font-display text-2xl text-aura-text">{formatNOK(totalBalance)}</p>
             </div>
           </div>
 

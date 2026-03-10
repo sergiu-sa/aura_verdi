@@ -21,6 +21,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import { formatNOK, formatNOKCompact } from '@/lib/utils/format-currency'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import type { ForecastPoint } from '@/types/financial'
 
 const WARNING_THRESHOLD = 5_000
@@ -41,17 +42,18 @@ interface Props {
 function ChartTooltip({
   active,
   payload,
+  colors,
 }: {
   active?: boolean
   payload?: Array<{ payload: ForecastPoint }>
+  colors?: { positive: string; danger: string; warning: string }
 }) {
   if (!active || !payload?.length) return null
   const point = payload[0].payload
 
-  // Determine balance color
-  let balanceColor = '#4DD9A0'
-  if (point.balance < DANGER_THRESHOLD) balanceColor = '#C75050'
-  else if (point.balance < WARNING_THRESHOLD) balanceColor = '#D4A039'
+  let balanceColor = colors?.positive ?? '#4DD9A0'
+  if (point.balance < DANGER_THRESHOLD) balanceColor = colors?.danger ?? '#C75050'
+  else if (point.balance < WARNING_THRESHOLD) balanceColor = colors?.warning ?? '#D4A039'
 
   // Format date as Norwegian
   const date = new Date(point.date).toLocaleDateString('nb-NO', {
@@ -60,16 +62,16 @@ function ChartTooltip({
   })
 
   return (
-    <div className="bg-[#1C1C28] border border-[#2C2C3A] rounded-lg px-3 py-2 shadow-xl max-w-[200px]">
-      <p className="text-[#8888A0] text-xs mb-1">{date}</p>
+    <div className="bg-aura-surface border border-aura-border rounded-lg px-3 py-2 shadow-xl max-w-[200px]">
+      <p className="text-aura-text-secondary text-xs mb-1">{date}</p>
       <p className="text-sm font-medium" style={{ color: balanceColor }}>
         {formatNOK(point.balance)}
       </p>
       {point.events.length > 0 && (
-        <div className="mt-1.5 pt-1.5 border-t border-[#2C2C3A]">
+        <div className="mt-1.5 pt-1.5 border-t border-aura-border">
           {point.events.map((e, i) => (
-            <p key={i} className="text-xs text-[#A0A0B8] truncate">
-              <span className={e.amount < 0 ? 'text-[#C75050]' : 'text-[#4DD9A0]'}>
+            <p key={i} className="text-xs text-aura-text-secondary truncate">
+              <span className={e.amount < 0 ? 'text-aura-danger' : 'text-aura-positive'}>
                 {e.amount < 0 ? '−' : '+'}{formatNOK(Math.abs(e.amount)).replace(' kr', '')}
               </span>
               {' '}{e.name}
@@ -84,6 +86,7 @@ function ChartTooltip({
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function ForecastChart({ points }: Props) {
+  const colors = useThemeColors()
   const [range, setRange] = useState(30)
 
   const filteredPoints = useMemo(
@@ -120,9 +123,9 @@ export function ForecastChart({ points }: Props) {
     return lowest
   }, [filteredPoints])
 
-  let lowestColor = 'text-[#4DD9A0]'
-  if (lowestPoint.balance < DANGER_THRESHOLD) lowestColor = 'text-[#C75050]'
-  else if (lowestPoint.balance < WARNING_THRESHOLD) lowestColor = 'text-[#D4A039]'
+  let lowestColor = 'text-aura-positive'
+  if (lowestPoint.balance < DANGER_THRESHOLD) lowestColor = 'text-aura-danger'
+  else if (lowestPoint.balance < WARNING_THRESHOLD) lowestColor = 'text-aura-warning'
 
   const lowestDate = new Date(lowestPoint.date).toLocaleDateString('nb-NO', {
     day: 'numeric',
@@ -144,8 +147,8 @@ export function ForecastChart({ points }: Props) {
               onClick={() => setRange(r.days)}
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 range === r.days
-                  ? 'bg-[#0D7377] text-white'
-                  : 'text-[#8888A0] hover:text-[#E8E8EC] hover:bg-[#2C2C3A]'
+                  ? 'bg-aura-primary text-white'
+                  : 'text-aura-text-secondary hover:text-aura-text hover:bg-aura-border'
               }`}
             >
               {r.label}
@@ -162,16 +165,16 @@ export function ForecastChart({ points }: Props) {
         >
           <defs>
             <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4DD9A0" stopOpacity={0.3} />
-              <stop offset={`${warningPct * 100}%`} stopColor="#D4A039" stopOpacity={0.2} />
-              <stop offset={`${dangerPct * 100}%`} stopColor="#C75050" stopOpacity={0.15} />
-              <stop offset="100%" stopColor="#C75050" stopOpacity={0.05} />
+              <stop offset="0%" stopColor={colors.positive} stopOpacity={0.3} />
+              <stop offset={`${warningPct * 100}%`} stopColor={colors.warning} stopOpacity={0.2} />
+              <stop offset={`${dangerPct * 100}%`} stopColor={colors.danger} stopOpacity={0.15} />
+              <stop offset="100%" stopColor={colors.danger} stopOpacity={0.05} />
             </linearGradient>
           </defs>
 
           <XAxis
             dataKey="label"
-            tick={{ fill: '#8888A0', fontSize: 11 }}
+            tick={{ fill: colors.chartAxis, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             interval={tickInterval}
@@ -179,19 +182,19 @@ export function ForecastChart({ points }: Props) {
 
           <YAxis
             tickFormatter={(v: number) => formatNOKCompact(v)}
-            tick={{ fill: '#8888A0', fontSize: 11 }}
+            tick={{ fill: colors.chartAxis, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={70}
           />
 
-          <Tooltip content={<ChartTooltip />} />
+          <Tooltip content={<ChartTooltip colors={colors} />} />
 
           {/* Warning threshold line */}
           {minBal < WARNING_THRESHOLD && maxBal > WARNING_THRESHOLD && (
             <ReferenceLine
               y={WARNING_THRESHOLD}
-              stroke="#D4A039"
+              stroke={colors.warning}
               strokeDasharray="4 4"
               strokeOpacity={0.5}
             />
@@ -201,7 +204,7 @@ export function ForecastChart({ points }: Props) {
           {minBal < DANGER_THRESHOLD && maxBal > DANGER_THRESHOLD && (
             <ReferenceLine
               y={DANGER_THRESHOLD}
-              stroke="#C75050"
+              stroke={colors.danger}
               strokeDasharray="4 4"
               strokeOpacity={0.5}
             />
@@ -210,7 +213,7 @@ export function ForecastChart({ points }: Props) {
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="#0D7377"
+            stroke={colors.primary}
             strokeWidth={2}
             fill="url(#forecastGradient)"
           />
@@ -219,7 +222,7 @@ export function ForecastChart({ points }: Props) {
 
       {/* Lowest point summary */}
       <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="text-[#8888A0]">
+        <span className="text-aura-text-secondary">
           Lowest point: <span className={lowestColor}>{formatNOK(lowestPoint.balance)}</span> on {lowestDate}
         </span>
         {lowestPoint.balance < WARNING_THRESHOLD && (

@@ -62,15 +62,15 @@ function statusLabel(status: BankConnection['status']): {
 } {
   switch (status) {
     case 'active':
-      return { text: 'Connected', color: 'text-[#2D8B6F]' }
+      return { text: 'Connected', color: 'text-aura-safe' }
     case 'pending':
-      return { text: 'Connecting...', color: 'text-[#D4A039]' }
+      return { text: 'Connecting...', color: 'text-aura-warning' }
     case 'expired':
-      return { text: 'Expired — re-authentication needed', color: 'text-[#D4A039]' }
+      return { text: 'Expired — re-authentication needed', color: 'text-aura-warning' }
     case 'revoked':
-      return { text: 'Disconnected', color: 'text-[#8888A0]' }
+      return { text: 'Disconnected', color: 'text-aura-text-secondary' }
     case 'error':
-      return { text: 'Connection error', color: 'text-[#C75050]' }
+      return { text: 'Connection error', color: 'text-aura-danger' }
   }
 }
 
@@ -221,10 +221,10 @@ export function BankConnectionSection({
       {/* Section header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">
+          <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-1">
             Banking
           </p>
-          <h2 className="font-display text-2xl text-[#E8E8EC]">
+          <h2 className="font-display text-2xl text-aura-text">
             Connected Banks
           </h2>
         </div>
@@ -234,7 +234,7 @@ export function BankConnectionSection({
             size="sm"
             onClick={() => triggerSync()}
             disabled={syncing}
-            className="border-[#2C2C3A] text-[#8888A0] hover:text-[#E8E8EC] hover:border-[#0D7377] text-xs"
+            className="border-aura-border text-aura-text-secondary hover:text-aura-text hover:border-aura-primary text-xs"
           >
             {syncing ? 'Syncing...' : 'Sync All'}
           </Button>
@@ -243,17 +243,17 @@ export function BankConnectionSection({
 
       {/* Status messages */}
       {successMessage && (
-        <div className="mb-4 p-3 rounded-lg bg-[#0D3B2E] border border-[#2D8B6F]/40 text-[#4DD9A0] text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-aura-safe-muted border border-aura-safe/40 text-aura-positive text-sm">
           {successMessage}
         </div>
       )}
       {syncMessage && (
-        <div className="mb-4 p-3 rounded-lg bg-[#1C1C28] border border-[#2C2C3A] text-[#E8E8EC] text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-aura-surface border border-aura-border text-aura-text text-sm">
           {syncMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="mb-4 p-3 rounded-lg bg-[#3B0D0D] border border-[#C75050]/40 text-[#F08080] text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-aura-danger-muted border border-aura-danger/40 text-aura-danger text-sm">
           {errorMessage}
         </div>
       )}
@@ -266,18 +266,18 @@ export function BankConnectionSection({
             return (
               <div
                 key={conn.id}
-                className="flex items-start justify-between p-4 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]"
+                className="flex items-start justify-between p-4 rounded-xl bg-aura-surface border border-aura-border"
               >
                 <div>
-                  <p className="text-[#E8E8EC] font-medium text-sm">
+                  <p className="text-aura-text font-medium text-sm">
                     {conn.bank_name}
                   </p>
                   <p className={`text-xs mt-0.5 ${color}`}>{text}</p>
-                  <p className="text-xs text-[#8888A0] mt-1">
+                  <p className="text-xs text-aura-text-secondary mt-1">
                     Last synced: {formatDate(conn.last_synced_at)}
                   </p>
                   {conn.consent_expires_at && (
-                    <p className="text-xs text-[#8888A0]">
+                    <p className="text-xs text-aura-text-secondary">
                       Consent expires: {formatDate(conn.consent_expires_at)}
                     </p>
                   )}
@@ -289,7 +289,7 @@ export function BankConnectionSection({
                       size="sm"
                       onClick={() => triggerSync(conn.id)}
                       disabled={syncing}
-                      className="text-xs text-[#8888A0] hover:text-[#0D7377]"
+                      className="text-xs text-aura-text-secondary hover:text-aura-primary"
                     >
                       Sync
                     </Button>
@@ -298,7 +298,7 @@ export function BankConnectionSection({
                       size="sm"
                       onClick={() => handleDisconnect(conn.id, conn.bank_name)}
                       disabled={syncing || disconnecting === conn.id}
-                      className="text-xs text-[#8888A0] hover:text-[#C75050]"
+                      className="text-xs text-aura-text-secondary hover:text-aura-danger"
                     >
                       {disconnecting === conn.id ? 'Disconnecting...' : 'Disconnect'}
                     </Button>
@@ -310,7 +310,7 @@ export function BankConnectionSection({
                     size="sm"
                     onClick={() => handleConnectBank(conn.bank_id, conn.bank_name)}
                     disabled={!!connectingBankId}
-                    className="text-xs text-[#D4A039] hover:text-[#E8E8EC]"
+                    className="text-xs text-aura-warning hover:text-aura-text"
                   >
                     Re-connect
                   </Button>
@@ -323,12 +323,12 @@ export function BankConnectionSection({
 
       {/* Empty state */}
       {connections.length === 0 && !showBankPicker && (
-        <div className="p-6 rounded-xl bg-[#1C1C28] border border-[#2C2C3A] border-dashed text-center mb-6">
-          <p className="text-[#8888A0] text-sm leading-relaxed mb-4">
+        <div className="p-6 rounded-xl bg-aura-surface border border-aura-border border-dashed text-center mb-6">
+          <p className="text-aura-text-secondary text-sm leading-relaxed mb-4">
             Connect your Norwegian bank account to let Aura see your balance,
             transactions, and upcoming bills.
           </p>
-          <p className="text-[#8888A0] text-xs mb-4">
+          <p className="text-aura-text-secondary text-xs mb-4">
             You&apos;ll be redirected to your bank&apos;s BankID login — we never see your
             bank password. Read-only access only.
           </p>
@@ -343,7 +343,7 @@ export function BankConnectionSection({
             setErrorMessage(null)
             loadAvailableBanks()
           }}
-          className="bg-[#0D7377] hover:bg-[#11999E] text-white text-sm"
+          className="bg-aura-primary hover:bg-aura-primary-light text-white text-sm"
         >
           + Connect bank account
         </Button>
@@ -351,16 +351,16 @@ export function BankConnectionSection({
 
       {/* Bank picker */}
       {showBankPicker && (
-        <div className="mt-4 p-4 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
+        <div className="mt-4 p-4 rounded-xl bg-aura-surface border border-aura-border">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[#E8E8EC] text-sm font-medium">Select your bank</p>
+            <p className="text-aura-text text-sm font-medium">Select your bank</p>
             <button
               onClick={() => {
                 setShowBankPicker(false)
                 setShowAllBanks(false)
                 setConnectingBankId(null)
               }}
-              className="text-[#8888A0] hover:text-[#E8E8EC] text-xs"
+              className="text-aura-text-secondary hover:text-aura-text text-xs"
             >
               Cancel
             </button>
@@ -368,7 +368,7 @@ export function BankConnectionSection({
 
           {/* Loading state */}
           {banksLoading && (
-            <p className="text-sm text-[#8888A0] py-4 text-center">
+            <p className="text-sm text-aura-text-secondary py-4 text-center">
               Loading available banks...
             </p>
           )}
@@ -376,10 +376,10 @@ export function BankConnectionSection({
           {/* Error state */}
           {!banksLoading && banksError && (
             <div className="py-2">
-              <p className="text-sm text-[#F08080] mb-2">{banksError}</p>
+              <p className="text-sm text-aura-danger mb-2">{banksError}</p>
               <button
                 onClick={() => { setAvailableBanks([]); setBanksError(null); loadAvailableBanks() }}
-                className="text-xs text-[#8888A0] hover:text-[#0D7377] underline"
+                className="text-xs text-aura-text-secondary hover:text-aura-primary underline"
               >
                 Try again
               </button>
@@ -402,15 +402,15 @@ export function BankConnectionSection({
                         w-full flex items-center justify-between p-3 rounded-lg text-left
                         border transition-colors
                         ${isConnected
-                          ? 'border-[#2C2C3A] bg-[#121218] opacity-50 cursor-not-allowed'
+                          ? 'border-aura-border bg-aura-background opacity-50 cursor-not-allowed'
                           : isConnecting
-                            ? 'border-[#0D7377] bg-[#0D7377]/10 cursor-wait'
-                            : 'border-[#2C2C3A] hover:border-[#0D7377] hover:bg-[#0D7377]/5 cursor-pointer'
+                            ? 'border-aura-primary bg-aura-primary/10 cursor-wait'
+                            : 'border-aura-border hover:border-aura-primary hover:bg-aura-primary/5 cursor-pointer'
                         }
                       `}
                     >
-                      <span className="text-sm text-[#E8E8EC]">{bank.name}</span>
-                      <span className="text-xs text-[#8888A0]">
+                      <span className="text-sm text-aura-text">{bank.name}</span>
+                      <span className="text-xs text-aura-text-secondary">
                         {isConnected ? 'Already connected' : isConnecting ? 'Connecting...' : 'Connect →'}
                       </span>
                     </button>
@@ -421,7 +421,7 @@ export function BankConnectionSection({
               {!showAllBanks && availableBanks.length > 8 && (
                 <button
                   onClick={() => setShowAllBanks(true)}
-                  className="mt-3 text-xs text-[#8888A0] hover:text-[#0D7377] underline"
+                  className="mt-3 text-xs text-aura-text-secondary hover:text-aura-primary underline"
                 >
                   Show all {availableBanks.length} supported banks
                 </button>
@@ -429,7 +429,7 @@ export function BankConnectionSection({
             </>
           )}
 
-          <p className="mt-4 text-xs text-[#8888A0] leading-relaxed">
+          <p className="mt-4 text-xs text-aura-text-secondary leading-relaxed">
             You&apos;ll be redirected to your bank&apos;s BankID authentication. Aura gets
             read-only access — we can never move money. Consent is valid for up to
             180 days.

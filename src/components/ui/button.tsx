@@ -17,10 +17,10 @@ const buttonVariants = cva(
           'bg-aura-danger text-white hover:bg-aura-danger/90',
         // Outlined — transparent with border
         outline:
-          'border border-aura-border bg-transparent text-aura-text hover:bg-white/5 hover:border-aura-primary/50',
+          'border border-aura-border bg-transparent text-aura-text hover:bg-aura-text/5 hover:border-aura-primary/50',
         // Ghost — minimal, for secondary actions
         ghost:
-          'text-aura-text-secondary hover:text-aura-text hover:bg-white/5',
+          'text-aura-text-secondary hover:text-aura-text hover:bg-aura-text/5',
         // Link — styled as a text link
         link:
           'text-aura-primary underline-offset-4 hover:underline p-0 h-auto',

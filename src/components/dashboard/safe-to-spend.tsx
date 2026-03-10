@@ -23,9 +23,9 @@ interface Props {
 }
 
 function amountColorClass(amount: number): string {
-  if (amount > 5_000) return 'text-[#4DD9A0]'
-  if (amount > 1_000) return 'text-[#D4A039]'
-  return 'text-[#C75050]'
+  if (amount > 5_000) return 'text-aura-positive'
+  if (amount > 1_000) return 'text-aura-warning'
+  return 'text-aura-danger'
 }
 
 export function SafeToSpend({
@@ -56,7 +56,7 @@ export function SafeToSpend({
       {/* Primary number */}
       <div className="mb-1">
         {hasCriticalBills && (
-          <p className="text-[#8888A0] text-xs mb-1">{primaryLabel}</p>
+          <p className="text-aura-text-secondary text-xs mb-1">{primaryLabel}</p>
         )}
         <p className={`font-display text-5xl md:text-6xl font-normal tracking-tight leading-none ${amountColorClass(primaryAmount)}`}>
           {formatNOK(Math.max(0, primaryAmount))}
@@ -66,7 +66,7 @@ export function SafeToSpend({
       {/* Secondary: after all bills (only when critical bills exist) */}
       {hasCriticalBills && (
         <div className="mt-3">
-          <p className="text-[#8888A0] text-xs mb-1">After all bills</p>
+          <p className="text-aura-text-secondary text-xs mb-1">After all bills</p>
           <p className={`font-display text-3xl font-normal tracking-tight leading-none ${amountColorClass(safeToSpend)}`}>
             {formatNOK(Math.max(0, safeToSpend))}
           </p>
@@ -74,21 +74,21 @@ export function SafeToSpend({
       )}
 
       {/* Status line */}
-      <p className="text-[#8888A0] text-sm mt-3">{statusText}</p>
+      <p className="text-aura-text-secondary text-sm mt-3">{statusText}</p>
 
       {/* Breakdown — progressive disclosure */}
       {accountCount > 0 && (
-        <div className="mt-5 pt-4 border-t border-[#2C2C3A] space-y-1.5">
-          <Link href="/accounts" className="flex justify-between text-xs group hover:bg-white/5 -mx-2 px-2 py-1 rounded transition-colors">
-            <span className="text-[#8888A0] group-hover:text-[#E8E8EC] transition-colors">
+        <div className="mt-5 pt-4 border-t border-aura-border space-y-1.5">
+          <Link href="/accounts" className="flex justify-between text-xs group hover:bg-aura-text/5 -mx-2 px-2 py-1 rounded transition-colors">
+            <span className="text-aura-text-secondary group-hover:text-aura-text transition-colors">
               Total balance ({accountCount} {accountCount === 1 ? 'account' : 'accounts'})
             </span>
             <span className="text-amount text-sm">{formatNOK(totalBalance)}</span>
           </Link>
           {totalUpcomingBills > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-[#8888A0]">Upcoming bills</span>
-              <span className="text-amount text-sm text-[#D4A039]">
+              <span className="text-aura-text-secondary">Upcoming bills</span>
+              <span className="text-amount text-sm text-aura-warning">
                 − {formatNOK(totalUpcomingBills)}
               </span>
             </div>
@@ -105,10 +105,10 @@ export function SafeToSpendEmpty() {
   return (
     <div className="surface p-6 md:p-8 rounded-xl">
       <p className="text-section-header mb-3">Safe to spend</p>
-      <p className="font-display text-5xl font-normal tracking-tight leading-none text-[#2C2C3A]">
+      <p className="font-display text-5xl font-normal tracking-tight leading-none text-aura-border">
         — kr
       </p>
-      <p className="text-[#8888A0] text-sm mt-3">
+      <p className="text-aura-text-secondary text-sm mt-3">
         Connect your bank in Settings to see this number.
       </p>
     </div>

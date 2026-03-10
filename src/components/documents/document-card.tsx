@@ -70,9 +70,9 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 }
 
 const URGENCY_CONFIG = {
-  high: { color: 'text-[#C75050]', bg: 'bg-[#3B0D0D]', border: 'border-[#C75050]/30', label: 'Urgent' },
-  medium: { color: 'text-[#D4A039]', bg: 'bg-[#3B2A0D]', border: 'border-[#D4A039]/30', label: 'Review needed' },
-  low: { color: 'text-[#2D8B6F]', bg: 'bg-[#0D3B2E]', border: 'border-[#2D8B6F]/30', label: 'No action needed' },
+  high: { color: 'text-aura-danger', bg: 'bg-aura-danger-muted', border: 'border-aura-danger/30', label: 'Urgent' },
+  medium: { color: 'text-aura-warning', bg: 'bg-aura-warning-muted', border: 'border-aura-warning/30', label: 'Review needed' },
+  low: { color: 'text-aura-safe', bg: 'bg-aura-safe-muted', border: 'border-aura-safe/30', label: 'No action needed' },
 }
 
 function formatBytes(bytes: number | null): string {
@@ -127,15 +127,15 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
   const isInProgress = doc.status === 'analyzing' || doc.status === 'redaction_confirmed'
 
   return (
-    <div className="rounded-xl bg-[#1C1C28] border border-[#2C2C3A] overflow-hidden">
+    <div className="rounded-xl bg-aura-surface border border-aura-border overflow-hidden">
 
       {/* ── Card header ─────────────────────────────────────────────────── */}
       <div className="p-4">
         <div className="flex items-start gap-3">
           <span className="text-xl flex-shrink-0 mt-0.5">{fileIcon(doc.mime_type)}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[#E8E8EC] truncate">{doc.original_filename}</p>
-            <p className="text-xs text-[#8888A0] mt-0.5">
+            <p className="text-sm font-medium text-aura-text truncate">{doc.original_filename}</p>
+            <p className="text-xs text-aura-text-secondary mt-0.5">
               {docTypeLabel} · {formatDate(doc.uploaded_at)}
               {doc.file_size_bytes ? ` · ${formatBytes(doc.file_size_bytes)}` : ''}
             </p>
@@ -144,11 +144,11 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
           {/* Status badge + delete */}
           <div className="flex-shrink-0 flex items-center gap-2">
             {doc.status === 'pii_detected' && (
-              <span className="text-xs text-[#D4A039]">🛡️ Review PII</span>
+              <span className="text-xs text-aura-warning">🛡️ Review PII</span>
             )}
             {isInProgress && (
-              <div className="flex items-center gap-1.5 text-xs text-[#D4A039]">
-                <div className="w-3 h-3 border border-[#D4A039] border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center gap-1.5 text-xs text-aura-warning">
+                <div className="w-3 h-3 border border-aura-warning border-t-transparent rounded-full animate-spin" />
                 <span>Analyzing</span>
               </div>
             )}
@@ -156,12 +156,12 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
               <span className={`text-xs ${urgencyConfig.color}`}>{urgencyConfig.label}</span>
             )}
             {doc.status === 'error' && (
-              <span className="text-xs text-[#C75050]">Failed</span>
+              <span className="text-xs text-aura-danger">Failed</span>
             )}
             {!isInProgress && (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="text-[#55556A] hover:text-[#C75050] transition-colors p-1"
+                className="text-aura-text-dim hover:text-aura-danger transition-colors p-1"
                 title="Delete document"
               >
                 <Trash2 size={14} />
@@ -173,20 +173,20 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
       {/* ── Delete confirmation ───────────────────────────────────────────── */}
       {confirmDelete && (
-        <div className="px-4 pb-3 flex items-center justify-between gap-3 border-t border-[#2C2C3A] pt-3">
-          <p className="text-xs text-[#C75050]">Delete this document permanently?</p>
+        <div className="px-4 pb-3 flex items-center justify-between gap-3 border-t border-aura-border pt-3">
+          <p className="text-xs text-aura-danger">Delete this document permanently?</p>
           <div className="flex gap-2">
             <button
               onClick={() => setConfirmDelete(false)}
               disabled={deleting}
-              className="text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors px-2 py-1"
+              className="text-xs text-aura-text-secondary hover:text-aura-text transition-colors px-2 py-1"
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs text-[#C75050] hover:text-white bg-[#C75050]/20 hover:bg-[#C75050]/40 px-3 py-1 rounded transition-colors disabled:opacity-50"
+              className="text-xs text-aura-danger hover:text-white bg-aura-danger/20 hover:bg-aura-danger/40 px-3 py-1 rounded transition-colors disabled:opacity-50"
             >
               {deleting ? 'Deleting...' : 'Delete'}
             </button>
@@ -196,7 +196,7 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
       {/* ── Privacy Shield review (pii_detected) ────────────────────────── */}
       {doc.status === 'pii_detected' && showRedactionPreview && doc.extracted_text && (
-        <div className="px-4 pb-4 border-t border-[#2C2C3A] pt-4">
+        <div className="px-4 pb-4 border-t border-aura-border pt-4">
           <RedactionPreview
             documentId={doc.id}
             extractedText={doc.extracted_text}
@@ -212,10 +212,10 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
       {/* Show review button if user closed the preview */}
       {doc.status === 'pii_detected' && !showRedactionPreview && (
-        <div className="px-4 pb-4 border-t border-[#2C2C3A] pt-3">
+        <div className="px-4 pb-4 border-t border-aura-border pt-3">
           <button
             onClick={() => setShowRedactionPreview(true)}
-            className="text-xs text-[#D4A039] hover:text-[#E8C56A] underline"
+            className="text-xs text-aura-warning hover:text-aura-warning underline"
           >
             🛡️ Review Privacy Shield ({doc.pii_detections?.length ?? 0} items detected)
           </button>
@@ -233,11 +233,11 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
             </div>
           )}
 
-          <div className="px-4 pb-3 border-t border-[#2C2C3A]">
-            <p className="text-xs text-[#C0C0D0] leading-relaxed mt-3">{doc.ai_summary}</p>
+          <div className="px-4 pb-3 border-t border-aura-border">
+            <p className="text-xs text-aura-text-secondary leading-relaxed mt-3">{doc.ai_summary}</p>
 
             {(doc.ai_flags?.concerns?.length || doc.ai_flags?.deadlines?.length || doc.ai_flags?.recommended_action) && (
-              <button onClick={() => setExpanded((v) => !v)} className="mt-2 text-xs text-[#8888A0] hover:text-[#0D7377] underline">
+              <button onClick={() => setExpanded((v) => !v)} className="mt-2 text-xs text-aura-text-secondary hover:text-aura-primary underline">
                 {expanded ? 'Show less' : 'Show details'}
               </button>
             )}
@@ -246,11 +246,11 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
               <div className="mt-3 space-y-3">
                 {doc.ai_flags?.concerns && doc.ai_flags.concerns.length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-[#8888A0] mb-1">Key points</p>
+                    <p className="text-[10px] uppercase tracking-widest text-aura-text-secondary mb-1">Key points</p>
                     <ul className="space-y-1">
                       {doc.ai_flags.concerns.map((c, i) => (
-                        <li key={i} className="text-xs text-[#C0C0D0] flex gap-1.5">
-                          <span className="text-[#0D7377] flex-shrink-0">·</span>{c}
+                        <li key={i} className="text-xs text-aura-text-secondary flex gap-1.5">
+                          <span className="text-aura-primary flex-shrink-0">·</span>{c}
                         </li>
                       ))}
                     </ul>
@@ -259,10 +259,10 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
                 {doc.ai_flags?.deadlines && doc.ai_flags.deadlines.length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-[#8888A0] mb-1">Deadlines</p>
+                    <p className="text-[10px] uppercase tracking-widest text-aura-text-secondary mb-1">Deadlines</p>
                     <ul className="space-y-1">
                       {doc.ai_flags.deadlines.map((d, i) => (
-                        <li key={i} className="text-xs text-[#D4A039] flex gap-1.5">
+                        <li key={i} className="text-xs text-aura-warning flex gap-1.5">
                           <span className="flex-shrink-0">⏱</span>{d}
                         </li>
                       ))}
@@ -271,9 +271,9 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
                 )}
 
                 {doc.ai_flags?.recommended_action && (
-                  <div className="p-3 rounded-lg bg-[#121218] border border-[#2C2C3A]">
-                    <p className="text-[10px] uppercase tracking-widest text-[#8888A0] mb-1">Suggested action</p>
-                    <p className="text-xs text-[#E8E8EC] leading-relaxed">{doc.ai_flags.recommended_action}</p>
+                  <div className="p-3 rounded-lg bg-aura-background border border-aura-border">
+                    <p className="text-[10px] uppercase tracking-widest text-aura-text-secondary mb-1">Suggested action</p>
+                    <p className="text-xs text-aura-text leading-relaxed">{doc.ai_flags.recommended_action}</p>
                   </div>
                 )}
               </div>
@@ -281,16 +281,16 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
             {/* Add as expense — only for documents with extracted financial data */}
             {doc.ai_flags?.financial_extract && (
-              <div className="mt-3 pt-3 border-t border-[#2C2C3A]">
+              <div className="mt-3 pt-3 border-t border-aura-border">
                 {hasLinkedBill || justAdded ? (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-[#4DD9A0]">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-aura-positive">
                     <Check size={14} />
                     Added as expense
                   </span>
                 ) : (
                   <button
                     onClick={() => setShowExpenseDialog(true)}
-                    className="inline-flex items-center gap-1.5 text-xs text-[#0D7377] hover:text-[#11999E] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs text-aura-primary hover:text-aura-primary-light transition-colors"
                   >
                     <Plus size={14} />
                     Add as upcoming expense
@@ -317,10 +317,10 @@ export function DocumentCard({ doc, onRefresh, onRetryAnalysis, retrying = false
 
       {/* ── Error state ─────────────────────────────────────────────────── */}
       {doc.status === 'error' && (
-        <div className="px-4 pb-4 border-t border-[#2C2C3A] pt-3">
-          <p className="text-xs text-[#8888A0] mb-2">Analysis failed. The file is saved — tap to retry.</p>
+        <div className="px-4 pb-4 border-t border-aura-border pt-3">
+          <p className="text-xs text-aura-text-secondary mb-2">Analysis failed. The file is saved — tap to retry.</p>
           {onRetryAnalysis && (
-            <button onClick={() => onRetryAnalysis(doc.id)} disabled={retrying} className="text-xs text-[#0D7377] hover:text-[#11999E] underline disabled:opacity-50">
+            <button onClick={() => onRetryAnalysis(doc.id)} disabled={retrying} className="text-xs text-aura-primary hover:text-aura-primary-light underline disabled:opacity-50">
               {retrying ? 'Retrying...' : 'Retry analysis'}
             </button>
           )}

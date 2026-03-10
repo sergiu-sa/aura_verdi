@@ -14,6 +14,7 @@ import {
   Area,
 } from 'recharts'
 import { formatNOK } from '@/lib/utils/format-currency'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import type { ForecastPoint } from '@/types/financial'
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function ForecastMini({ points }: Props) {
+  const colors = useThemeColors()
   if (points.length === 0) return null
 
   // Find lowest point
@@ -29,9 +31,9 @@ export function ForecastMini({ points }: Props) {
     if (p.balance < lowest.balance) lowest = p
   }
 
-  let lowestColor = 'text-[#4DD9A0]'
-  if (lowest.balance < 1_000) lowestColor = 'text-[#C75050]'
-  else if (lowest.balance < 5_000) lowestColor = 'text-[#D4A039]'
+  let lowestColor = 'text-aura-positive'
+  if (lowest.balance < 1_000) lowestColor = 'text-aura-danger'
+  else if (lowest.balance < 5_000) lowestColor = 'text-aura-warning'
 
   const lowestDate = new Date(lowest.date).toLocaleDateString('nb-NO', {
     day: 'numeric',
@@ -48,22 +50,22 @@ export function ForecastMini({ points }: Props) {
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="#0D7377"
+            stroke={colors.primary}
             strokeWidth={1.5}
-            fill="#0D7377"
+            fill={colors.primary}
             fillOpacity={0.1}
           />
         </AreaChart>
       </ResponsiveContainer>
 
       {/* Lowest point */}
-      <p className="text-xs text-[#8888A0] mt-2">
+      <p className="text-xs text-aura-text-secondary mt-2">
         Lowest: <span className={lowestColor}>{formatNOK(lowest.balance)}</span> on {lowestDate}
       </p>
 
       <Link
         href="/forecast"
-        className="text-xs text-[#0D7377] hover:text-[#10969B] transition-colors mt-1 inline-block"
+        className="text-xs text-aura-primary hover:text-aura-primary-light transition-colors mt-1 inline-block"
       >
         View full forecast &rarr;
       </Link>

@@ -52,10 +52,10 @@ export function NotificationSection({ preferences: initial }: Props) {
 
   return (
     <section className="mb-10">
-      <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">Alerts</p>
-      <h2 className="font-display text-2xl text-[#E8E8EC] mb-4">Notifications</h2>
+      <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-1">Alerts</p>
+      <h2 className="font-display text-2xl text-aura-text mb-4">Notifications</h2>
 
-      <div className="rounded-xl bg-[#1C1C28] border border-[#2C2C3A] p-5 space-y-4">
+      <div className="rounded-xl bg-aura-surface border border-aura-border p-5 space-y-4">
         {/* Critical emails */}
         <ToggleRow
           label="Critical email alerts"
@@ -75,22 +75,22 @@ export function NotificationSection({ preferences: initial }: Props) {
         />
 
         {/* Quiet hours */}
-        <div className="border-t border-[#2C2C3A] pt-4">
-          <p className="text-sm text-[#E8E8EC] mb-1">Quiet hours</p>
-          <p className="text-xs text-[#8888A0] mb-3">No emails sent during this period</p>
+        <div className="border-t border-aura-border pt-4">
+          <p className="text-sm text-aura-text mb-1">Quiet hours</p>
+          <p className="text-xs text-aura-text-secondary mb-3">No emails sent during this period</p>
           <div className="flex items-center gap-3">
             <input
               type="time"
               value={prefs.quiet_hours_start ?? '22:00'}
               onChange={(e) => updateQuietHours('quiet_hours_start', e.target.value)}
-              className="bg-[#1A1A26] border border-[#2C2C3A] rounded px-2 py-1.5 text-sm text-[#E8E8EC] [color-scheme:dark]"
+              className="bg-aura-input border border-aura-border rounded px-2 py-1.5 text-sm text-aura-text [color-scheme:dark]"
             />
-            <span className="text-xs text-[#8888A0]">to</span>
+            <span className="text-xs text-aura-text-secondary">to</span>
             <input
               type="time"
               value={prefs.quiet_hours_end ?? '07:00'}
               onChange={(e) => updateQuietHours('quiet_hours_end', e.target.value)}
-              className="bg-[#1A1A26] border border-[#2C2C3A] rounded px-2 py-1.5 text-sm text-[#E8E8EC] [color-scheme:dark]"
+              className="bg-aura-input border border-aura-border rounded px-2 py-1.5 text-sm text-aura-text [color-scheme:dark]"
             />
           </div>
         </div>
@@ -117,14 +117,14 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between">
       <div className="flex-1 mr-4">
-        <p className="text-sm text-[#E8E8EC]">{label}</p>
-        <p className="text-xs text-[#8888A0]">{description}</p>
+        <p className="text-sm text-aura-text">{label}</p>
+        <p className="text-xs text-aura-text-secondary">{description}</p>
       </div>
       <button
         onClick={() => onToggle(!checked)}
         disabled={loading}
         className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-          checked ? 'bg-[#0D7377]' : 'bg-[#2C2C3A]'
+          checked ? 'bg-aura-primary' : 'bg-aura-border'
         } ${loading ? 'opacity-50' : ''}`}
       >
         <span

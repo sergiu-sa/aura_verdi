@@ -76,15 +76,15 @@ export function MessageBubble({ role, content, isTyping = false, timestamp }: Me
         {!isUser && !isTyping && content && (
           <button
             onClick={handleCopy}
-            className="absolute -bottom-1 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded text-[#8888A0] hover:text-[#E8E8EC] hover:bg-white/5"
+            className="absolute -bottom-1 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded text-aura-text-secondary hover:text-aura-text hover:bg-aura-text/5"
             title="Copy to clipboard"
           >
-            {copied ? <Check size={12} className="text-[#2D8B6F]" /> : <Copy size={12} />}
+            {copied ? <Check size={12} className="text-aura-safe" /> : <Copy size={12} />}
           </button>
         )}
 
         {timestamp && (
-          <p className={cn('text-[10px] mt-1.5', isUser ? 'text-white/40' : 'text-[#8888A0]')}>
+          <p className={cn('text-[10px] mt-1.5', isUser ? 'text-white/40' : 'text-aura-text-secondary')}>
             {formatRelativeTime(timestamp)}
           </p>
         )}

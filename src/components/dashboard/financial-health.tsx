@@ -30,30 +30,30 @@ const CONFIG: Record<
   good: {
     label: 'On track',
     sublabel: 'Income is covering your expenses comfortably.',
-    dot: 'bg-[#2D8B6F]',
-    bg: 'bg-[#0D3B2E]',
-    border: 'border-[#2D8B6F]/30',
+    dot: 'bg-aura-safe',
+    bg: 'bg-aura-safe-muted',
+    border: 'border-aura-safe/30',
   },
   caution: {
     label: 'Watch your spending',
     sublabel: 'Expenses are close to your income. Keep an eye on it.',
-    dot: 'bg-[#D4A039]',
-    bg: 'bg-[#3B2E0D]',
-    border: 'border-[#D4A039]/30',
+    dot: 'bg-aura-warning',
+    bg: 'bg-aura-warning-muted',
+    border: 'border-aura-warning/30',
   },
   critical: {
     label: 'Tight this month',
     sublabel: 'Your expenses are exceeding your income.',
-    dot: 'bg-[#C75050]',
-    bg: 'bg-[#3B0D0D]',
-    border: 'border-[#C75050]/30',
+    dot: 'bg-aura-danger',
+    bg: 'bg-aura-danger-muted',
+    border: 'border-aura-danger/30',
   },
   'no-data': {
     label: 'No data yet',
     sublabel: 'Sync your bank to see your financial health.',
-    dot: 'bg-[#2C2C3A]',
-    bg: 'bg-[#1C1C28]',
-    border: 'border-[#2C2C3A]',
+    dot: 'bg-aura-border',
+    bg: 'bg-aura-surface',
+    border: 'border-aura-border',
   },
 }
 
@@ -72,25 +72,25 @@ export function FinancialHealth({
       {/* Status pill */}
       <div className="flex items-center gap-2 mb-2">
         <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}`} />
-        <span className="text-[#E8E8EC] font-medium text-sm">{label}</span>
+        <span className="text-aura-text font-medium text-sm">{label}</span>
       </div>
-      <p className="text-[#8888A0] text-xs leading-relaxed">{sublabel}</p>
+      <p className="text-aura-text-secondary text-xs leading-relaxed">{sublabel}</p>
 
       {/* Income vs expenses summary */}
       {hasData && (totalMonthlyIncome > 0 || totalMonthlyExpenses > 0) && (
-        <div className="mt-4 pt-4 border-t border-white/5 space-y-1.5">
+        <div className="mt-4 pt-4 border-t border-aura-text/5 space-y-1.5">
           {totalMonthlyIncome > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-[#8888A0]">Income (30 days)</span>
-              <span className="text-amount text-[#4DD9A0]">
+              <span className="text-aura-text-secondary">Income (30 days)</span>
+              <span className="text-amount text-aura-positive">
                 {formatNOK(totalMonthlyIncome)}
               </span>
             </div>
           )}
           {totalMonthlyExpenses > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-[#8888A0]">Expenses (30 days)</span>
-              <span className="text-amount text-[#E8E8EC]">
+              <span className="text-aura-text-secondary">Expenses (30 days)</span>
+              <span className="text-amount text-aura-text">
                 {formatNOK(totalMonthlyExpenses)}
               </span>
             </div>

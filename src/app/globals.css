@@ -4,67 +4,98 @@
 
 /* ─────────────────────────────────────────────────────────────────────────────
    AURA — Global Styles
-   Dark mode is the DEFAULT. Aura's palette is applied directly as CSS vars.
-   shadcn/ui components read from these CSS variables.
+   Dark mode is the DEFAULT. Both light and dark palettes defined below.
+   shadcn/ui components read from the --shadcn CSS variables.
+   Aura components read from the --aura-* CSS variables.
 ───────────────────────────────────────────────────────────────────────────── */
 
 @layer base {
   :root {
-    /* ── Light mode (secondary — rarely used) ── */
+    /* ── shadcn/ui bridge (light) ── */
     --background: 240 15% 97%;
-    --foreground: 240 15% 8%;
+    --foreground: 240 25% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 240 15% 8%;
+    --card-foreground: 240 25% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 8%;
-    --primary: 182 80% 25%;      /* Aura teal */
+    --popover-foreground: 240 25% 13%;
+    --primary: 182 80% 26%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 10% 90%;
+    --secondary: 240 10% 92%;
     --secondary-foreground: 240 15% 20%;
-    --muted: 240 10% 92%;
-    --muted-foreground: 240 10% 45%;
+    --muted: 240 10% 94%;
+    --muted-foreground: 240 8% 46%;
     --accent: 182 60% 30%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 65% 55%;
+    --destructive: 0 50% 48%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 88%;
-    --input: 240 10% 88%;
-    --ring: 182 80% 25%;
+    --border: 240 12% 90%;
+    --input: 240 12% 90%;
+    --ring: 182 80% 26%;
     --radius: 0.625rem;
+
+    /* ── Aura semantic palette (light) ── */
+    --aura-bg: 240 15% 97%;
+    --aura-surface: 0 0% 100%;
+    --aura-surface-high: 0 0% 100%;
+    --aura-text: 240 25% 13%;
+    --aura-text-secondary: 240 8% 46%;
+    --aura-text-dim: 240 6% 64%;
+    --aura-border: 240 12% 90%;
+    --aura-border-subtle: 240 8% 95%;
+    --aura-primary: 182 80% 26%;
+    --aura-primary-light: 182 80% 34%;
+    --aura-safe: 155 65% 30%;
+    --aura-safe-muted: 150 40% 93%;
+    --aura-warning: 42 82% 36%;
+    --aura-warning-muted: 42 90% 94%;
+    --aura-danger: 0 50% 48%;
+    --aura-danger-muted: 0 75% 95%;
+    --aura-positive: 155 80% 28%;
+    --aura-input: 240 12% 95%;
   }
 
   .dark {
-    /* ── Dark mode — PRIMARY design ── */
-    /* Background: #121218 */
-    --background: 240 15% 7%;
-    /* Text: #E8E8EC */
-    --foreground: 240 5% 92%;
-    /* Card surface: #1C1C28 */
+    /* ── shadcn/ui bridge (dark) ── */
+    --background: 240 15% 8%;
+    --foreground: 240 8% 92%;
     --card: 240 20% 13%;
-    --card-foreground: 240 5% 92%;
-    /* Popover / dropdown: #24243A */
+    --card-foreground: 240 8% 92%;
     --popover: 240 25% 18%;
-    --popover-foreground: 240 5% 92%;
-    /* Teal primary: #0D7377 */
-    --primary: 182 80% 25%;
+    --popover-foreground: 240 8% 92%;
+    --primary: 182 80% 26%;
     --primary-foreground: 0 0% 98%;
-    /* Secondary surface */
     --secondary: 240 20% 18%;
     --secondary-foreground: 240 5% 80%;
-    /* Muted text and backgrounds */
     --muted: 240 20% 16%;
     --muted-foreground: 240 8% 55%;
-    /* Accent (slightly lighter teal) */
     --accent: 182 60% 30%;
     --accent-foreground: 0 0% 98%;
-    /* Danger: #C75050 */
-    --destructive: 0 55% 55%;
+    --destructive: 0 50% 55%;
     --destructive-foreground: 0 0% 98%;
-    /* Borders: #2A2A3E */
     --border: 240 20% 20%;
     --input: 240 20% 18%;
-    --ring: 182 80% 25%;
+    --ring: 182 80% 26%;
     --radius: 0.625rem;
+
+    /* ── Aura semantic palette (dark) ── */
+    --aura-bg: 240 15% 8%;
+    --aura-surface: 240 20% 13%;
+    --aura-surface-high: 240 25% 18%;
+    --aura-text: 240 8% 92%;
+    --aura-text-secondary: 240 10% 58%;
+    --aura-text-dim: 240 10% 38%;
+    --aura-border: 240 20% 20%;
+    --aura-border-subtle: 240 20% 15%;
+    --aura-primary: 182 80% 26%;
+    --aura-primary-light: 182 80% 34%;
+    --aura-safe: 155 50% 36%;
+    --aura-safe-muted: 160 50% 24%;
+    --aura-warning: 40 60% 54%;
+    --aura-warning-muted: 35 80% 20%;
+    --aura-danger: 0 50% 55%;
+    --aura-danger-muted: 0 55% 18%;
+    --aura-positive: 155 65% 63%;
+    --aura-input: 240 15% 12%;
   }
 
   /* Apply dark mode by default */
@@ -72,9 +103,13 @@
     color-scheme: dark;
   }
 
+  html.light {
+    color-scheme: light;
+  }
+
   body {
-    background-color: #121218;
-    color: #E8E8EC;
+    background-color: hsl(var(--aura-bg));
+    color: hsl(var(--aura-text));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
@@ -108,7 +143,7 @@
 
   /* Focus rings — use Aura teal */
   :focus-visible {
-    outline: 2px solid theme('colors.aura.primary');
+    outline: 2px solid hsl(var(--aura-primary));
     outline-offset: 2px;
   }
 }
@@ -119,27 +154,34 @@
 @layer utilities {
   /* Large financial number display (e.g., safe-to-spend amount) */
   .text-financial-display {
-    @apply font-display text-4xl font-normal tracking-tight text-aura-text;
+    @apply font-display text-4xl font-normal tracking-tight;
+    color: hsl(var(--aura-text));
   }
 
   /* Section headers */
   .text-section-header {
-    @apply font-sans text-xs font-semibold uppercase tracking-widest text-aura-text-secondary;
+    @apply font-sans text-xs font-semibold uppercase tracking-widest;
+    color: hsl(var(--aura-text-secondary));
   }
 
   /* Monospaced amount display */
   .text-amount {
-    @apply font-mono text-aura-text tabular-nums;
+    @apply font-mono tabular-nums;
+    color: hsl(var(--aura-text));
   }
 
   /* Subtle card/panel surface */
   .surface {
-    @apply bg-aura-surface border border-aura-border rounded-lg;
+    background-color: hsl(var(--aura-surface));
+    border: 1px solid hsl(var(--aura-border));
+    @apply rounded-lg;
   }
 
   /* Higher elevation surface (dialogs, modals) */
   .surface-elevated {
-    @apply bg-aura-surface-high border border-aura-border rounded-xl shadow-2xl;
+    background-color: hsl(var(--aura-surface-high));
+    border: 1px solid hsl(var(--aura-border));
+    @apply rounded-xl shadow-2xl;
   }
 
   /* Animation delay utilities for staggered reveals */

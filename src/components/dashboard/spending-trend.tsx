@@ -16,6 +16,7 @@ import {
   Cell,
 } from 'recharts'
 import { formatNOK, formatNOKCompact } from '@/lib/utils/format-currency'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 
 interface MonthData {
   month: string   // YYYY-MM
@@ -43,17 +44,18 @@ function CustomTooltip({
   if (!active || !payload?.length) return null
   const item = payload[0].payload
   return (
-    <div className="bg-[#1C1C28] border border-[#2C2C3A] rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-[#E8E8EC] text-xs font-medium mb-1">{formatMonth(item.month)}</p>
-      <p className="text-xs text-[#C75050]">Spending: {formatNOK(item.spending)}</p>
+    <div className="bg-aura-surface border border-aura-border rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-aura-text text-xs font-medium mb-1">{formatMonth(item.month)}</p>
+      <p className="text-xs text-aura-danger">Spending: {formatNOK(item.spending)}</p>
       {item.income > 0 && (
-        <p className="text-xs text-[#4DD9A0]">Income: {formatNOK(item.income)}</p>
+        <p className="text-xs text-aura-positive">Income: {formatNOK(item.income)}</p>
       )}
     </div>
   )
 }
 
 export function SpendingTrend({ data }: Props) {
+  const colors = useThemeColors()
   if (data.length < 2) return null
 
   // Month-over-month comparison
@@ -69,12 +71,12 @@ export function SpendingTrend({ data }: Props) {
       <div className="flex items-center justify-between mb-1">
         <p className="text-section-header">Spending trend</p>
         {pctChange !== 0 && (
-          <span className={`text-xs font-medium ${pctChange > 0 ? 'text-[#C75050]' : 'text-[#4DD9A0]'}`}>
+          <span className={`text-xs font-medium ${pctChange > 0 ? 'text-aura-danger' : 'text-aura-positive'}`}>
             {pctChange > 0 ? '↑' : '↓'} {Math.abs(pctChange)}% vs last month
           </span>
         )}
       </div>
-      <p className="text-xs text-[#8888A0] mb-3">
+      <p className="text-xs text-aura-text-secondary mb-3">
         {formatMonth(current.month)}: {formatNOKCompact(current.spending)} spent
       </p>
 
@@ -83,17 +85,17 @@ export function SpendingTrend({ data }: Props) {
           <XAxis
             dataKey="month"
             tickFormatter={formatMonth}
-            tick={{ fill: '#8888A0', fontSize: 10 }}
+            tick={{ fill: colors.chartAxis, fontSize: 10 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis hide domain={[0, 'dataMax']} />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: colors.hoverOverlay }} />
           <Bar dataKey="spending" radius={[3, 3, 0, 0]} barSize={20}>
             {data.map((entry, i) => (
               <Cell
                 key={i}
-                fill={i === data.length - 1 ? '#0D7377' : '#2C2C3A'}
+                fill={i === data.length - 1 ? colors.primary : colors.border}
                 fillOpacity={i === data.length - 1 ? 1 : 0.8}
               />
             ))}

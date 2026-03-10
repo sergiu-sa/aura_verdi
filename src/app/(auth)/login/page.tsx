@@ -107,7 +107,7 @@ export default function LoginPage() {
 
           {/* Resend confirmation success */}
           {showResendSuccess && resendState?.message && (
-            <div className="rounded-md bg-[#0D3B2E] border border-[#2D8B6F]/40 px-4 py-3 text-sm text-[#4DD9A0] animate-fade-in">
+            <div className="rounded-md bg-aura-safe-muted border border-aura-safe/40 px-4 py-3 text-sm text-aura-positive animate-fade-in">
               {resendState.message}
             </div>
           )}

@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo } from 'react'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import {
   ResponsiveContainer,
   BarChart,
@@ -72,11 +73,11 @@ function CustomTooltip({
   const cat = SPENDING_CATEGORIES[catKey] ?? SPENDING_CATEGORIES.annet
 
   return (
-    <div className="bg-[#1C1C28] border border-[#2C2C3A] rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-[#E8E8EC] text-sm font-medium">
+    <div className="bg-aura-surface border border-aura-border rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-aura-text text-sm font-medium">
         {cat.emoji} {cat.label}
       </p>
-      <p className="text-amount text-[#4DD9A0] text-sm">{formatNOK(value)}</p>
+      <p className="text-amount text-aura-positive text-sm">{formatNOK(value)}</p>
     </div>
   )
 }
@@ -85,6 +86,7 @@ function CustomTooltip({
 
 export function SpendingChart({ data, totalExpenses, transactions }: Props) {
   const [range, setRange] = useState<TimeRange>('30d')
+  const colors = useThemeColors()
 
   // Compute chart data from transactions when available, filtered by range
   const { chartCategories, chartTotal } = useMemo(() => {
@@ -121,7 +123,7 @@ export function SpendingChart({ data, totalExpenses, transactions }: Props) {
     return (
       <div className="surface p-5 rounded-xl">
         <p className="text-section-header mb-3">Spending this month</p>
-        <p className="text-[#8888A0] text-sm">
+        <p className="text-aura-text-secondary text-sm">
           No spending data yet. Sync your bank to see where your money goes.
         </p>
       </div>
@@ -156,8 +158,8 @@ export function SpendingChart({ data, totalExpenses, transactions }: Props) {
                   className={cn(
                     'px-2 py-0.5 rounded text-xs transition-colors',
                     range === r
-                      ? 'bg-[#0D7377] text-white'
-                      : 'text-[#8888A0] hover:text-[#E8E8EC]'
+                      ? 'bg-aura-primary text-white'
+                      : 'text-aura-text-secondary hover:text-aura-text'
                   )}
                 >
                   {r}
@@ -165,7 +167,7 @@ export function SpendingChart({ data, totalExpenses, transactions }: Props) {
               ))}
             </div>
           )}
-          <p className="text-amount text-[#E8E8EC] text-sm">
+          <p className="text-amount text-aura-text text-sm">
             {formatNOK(chartTotal)}
           </p>
         </div>
@@ -183,7 +185,7 @@ export function SpendingChart({ data, totalExpenses, transactions }: Props) {
             dataKey="label"
             type="category"
             width={140}
-            tick={{ fill: '#8888A0', fontSize: 12 }}
+            tick={{ fill: colors.chartAxis, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
@@ -198,7 +200,7 @@ export function SpendingChart({ data, totalExpenses, transactions }: Props) {
           {/* Custom tooltip */}
           <Tooltip
             content={<CustomTooltip />}
-            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            cursor={{ fill: colors.hoverOverlay }}
           />
 
           {/* Bars — each category gets its own color */}

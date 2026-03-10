@@ -118,7 +118,7 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
             setEditingEvent(null)
             setDialogOpen(true)
           }}
-          className="flex items-center gap-1.5 text-xs text-[#0D7377] hover:text-[#10969B] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-aura-primary hover:text-aura-primary-light transition-colors"
         >
           <Plus size={14} />
           Add event
@@ -126,7 +126,7 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
       </div>
 
       {futureEntries.length === 0 ? (
-        <p className="text-[#8888A0] text-sm">
+        <p className="text-aura-text-secondary text-sm">
           No upcoming events. Add a planned expense or income to see it on the forecast.
         </p>
       ) : (
@@ -138,33 +138,33 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
             return (
               <div
                 key={`${entry.date}-${entry.name}-${i}`}
-                className="flex items-center gap-3 py-2.5 px-2 rounded-lg hover:bg-[#1A1A26] transition-colors group"
+                className="flex items-center gap-3 py-2.5 px-2 rounded-lg hover:bg-aura-input transition-colors group"
               >
                 {/* Date */}
-                <span className="text-xs text-[#8888A0] w-14 flex-shrink-0">
+                <span className="text-xs text-aura-text-secondary w-14 flex-shrink-0">
                   {formatDate(entry.date)}
                 </span>
 
                 {/* Name + badges */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#E8E8EC] truncate">{entry.name}</span>
+                    <span className="text-sm text-aura-text truncate">{entry.name}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
                       entry.source === 'bill'
-                        ? 'bg-[#2C2C3A] text-[#8888A0]'
-                        : 'bg-[#0D7377]/15 text-[#0D7377]'
+                        ? 'bg-aura-border text-aura-text-secondary'
+                        : 'bg-aura-primary/15 text-aura-primary'
                     }`}>
                       {entry.source === 'bill' ? 'Bill' : 'Planned'}
                     </span>
                     {badge && (
-                      <span className="text-[10px] text-[#8888A0]">{badge}</span>
+                      <span className="text-[10px] text-aura-text-secondary">{badge}</span>
                     )}
                   </div>
                 </div>
 
                 {/* Amount */}
                 <span className={`text-sm text-amount flex-shrink-0 ${
-                  isExpense ? 'text-[#C75050]' : 'text-[#4DD9A0]'
+                  isExpense ? 'text-aura-danger' : 'text-aura-positive'
                 }`}>
                   {isExpense ? '−' : '+'}{formatNOK(Math.abs(entry.amount))}
                 </span>
@@ -174,7 +174,7 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <button
                       onClick={() => handleEdit(entry)}
-                      className="p-1 text-[#8888A0] hover:text-[#E8E8EC] transition-colors"
+                      className="p-1 text-aura-text-secondary hover:text-aura-text transition-colors"
                       title="Edit"
                     >
                       <Pencil size={12} />
@@ -182,7 +182,7 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
                     <button
                       onClick={() => handleDelete(entry.id!)}
                       disabled={deleting === entry.id}
-                      className="p-1 text-[#8888A0] hover:text-[#C75050] transition-colors disabled:opacity-50"
+                      className="p-1 text-aura-text-secondary hover:text-aura-danger transition-colors disabled:opacity-50"
                       title="Delete"
                     >
                       <Trash2 size={12} />
@@ -194,7 +194,7 @@ export function EventTimeline({ bills, plannedEvents }: Props) {
           })}
 
           {futureEntries.length > 15 && (
-            <p className="text-xs text-[#8888A0] pt-2 pl-2">
+            <p className="text-xs text-aura-text-secondary pt-2 pl-2">
               +{futureEntries.length - 15} more events
             </p>
           )}

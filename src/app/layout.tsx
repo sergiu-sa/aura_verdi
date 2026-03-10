@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Serif_Display, Geist, Geist_Mono } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 // ── Typography ─────────────────────────────────────────────────────────────
@@ -47,14 +48,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    // 'dark' class applied by default — dark mode is Aura's primary design
     <html
       lang="en"
-      className={`dark ${dmSerifDisplay.variable} ${geist.variable} ${geistMono.variable}`}
+      className={`${dmSerifDisplay.variable} ${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-aura-background font-sans antialiased">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

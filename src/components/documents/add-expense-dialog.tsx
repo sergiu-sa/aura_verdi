@@ -110,39 +110,39 @@ export function AddExpenseDialog({ doc, onClose, onAdded }: Props) {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
       {/* Dialog card */}
-      <div className="relative bg-[#1C1C28] border border-[#2C2C3A] rounded-xl w-full max-w-md p-5 shadow-2xl">
+      <div className="relative bg-aura-surface border border-aura-border rounded-xl w-full max-w-md p-5 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg text-[#E8E8EC]">
+          <h3 className="font-display text-lg text-aura-text">
             Add as upcoming expense
           </h3>
-          <button onClick={onClose} className="text-[#8888A0] hover:text-[#E8E8EC] transition-colors">
+          <button onClick={onClose} className="text-aura-text-secondary hover:text-aura-text transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Source info */}
-        <p className="text-[10px] text-[#55556A] mb-4">
+        <p className="text-[10px] text-aura-text-dim mb-4">
           From: {doc.original_filename}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
-            <label className="text-xs text-[#8888A0] block mb-1">Name / Payee</label>
+            <label className="text-xs text-aura-text-secondary block mb-1">Name / Payee</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Tibber AS"
               maxLength={200}
-              className="w-full bg-[#121218] border border-[#2C2C3A] rounded-lg px-3 py-2 text-sm text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377]"
+              className="w-full bg-aura-background border border-aura-border rounded-lg px-3 py-2 text-sm text-aura-text placeholder:text-aura-text-dim focus:outline-none focus:border-aura-primary"
             />
           </div>
 
           {/* Amount */}
           <div>
-            <label className="text-xs text-[#8888A0] block mb-1">Amount (kr)</label>
+            <label className="text-xs text-aura-text-secondary block mb-1">Amount (kr)</label>
             <input
               type="number"
               value={amountStr}
@@ -150,28 +150,28 @@ export function AddExpenseDialog({ doc, onClose, onAdded }: Props) {
               placeholder="0"
               min="0"
               step="1"
-              className="w-full bg-[#121218] border border-[#2C2C3A] rounded-lg px-3 py-2 text-sm text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="w-full bg-aura-background border border-aura-border rounded-lg px-3 py-2 text-sm text-aura-text placeholder:text-aura-text-dim focus:outline-none focus:border-aura-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
           {/* Due date */}
           <div>
-            <label className="text-xs text-[#8888A0] block mb-1">Due date</label>
+            <label className="text-xs text-aura-text-secondary block mb-1">Due date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full bg-[#121218] border border-[#2C2C3A] rounded-lg px-3 py-2 text-sm text-[#E8E8EC] focus:outline-none focus:border-[#0D7377] [color-scheme:dark]"
+              className="w-full bg-aura-background border border-aura-border rounded-lg px-3 py-2 text-sm text-aura-text focus:outline-none focus:border-aura-primary [color-scheme:dark]"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="text-xs text-[#8888A0] block mb-1">Category</label>
+            <label className="text-xs text-aura-text-secondary block mb-1">Category</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-[#121218] border border-[#2C2C3A] rounded-lg px-3 py-2 text-sm text-[#E8E8EC] focus:outline-none focus:border-[#0D7377] [color-scheme:dark]"
+              className="w-full bg-aura-background border border-aura-border rounded-lg px-3 py-2 text-sm text-aura-text focus:outline-none focus:border-aura-primary [color-scheme:dark]"
             >
               <option value="">None</option>
               {CATEGORY_OPTIONS.map((opt) => (
@@ -182,11 +182,11 @@ export function AddExpenseDialog({ doc, onClose, onAdded }: Props) {
 
           {/* Recurrence */}
           <div>
-            <label className="text-xs text-[#8888A0] block mb-1">Repeats</label>
+            <label className="text-xs text-aura-text-secondary block mb-1">Repeats</label>
             <select
               value={recurrence}
               onChange={(e) => setRecurrence(e.target.value)}
-              className="w-full bg-[#121218] border border-[#2C2C3A] rounded-lg px-3 py-2 text-sm text-[#E8E8EC] focus:outline-none focus:border-[#0D7377] [color-scheme:dark]"
+              className="w-full bg-aura-background border border-aura-border rounded-lg px-3 py-2 text-sm text-aura-text focus:outline-none focus:border-aura-primary [color-scheme:dark]"
             >
               {RECURRENCE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -196,14 +196,14 @@ export function AddExpenseDialog({ doc, onClose, onAdded }: Props) {
 
           {/* Error */}
           {error && (
-            <p className="text-xs text-[#C75050]">{error}</p>
+            <p className="text-xs text-aura-danger">{error}</p>
           )}
 
           {/* Submit */}
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-[#0D7377] hover:bg-[#0E8589] text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
+            className="w-full bg-aura-primary hover:bg-aura-primary-light text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
             {saving ? 'Adding...' : 'Add to upcoming expenses'}
           </button>

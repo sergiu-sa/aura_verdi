@@ -45,7 +45,7 @@ export default async function DocumentsPage() {
 
       <DocumentList initialDocuments={docs} linkedDocIds={linkedDocIds} />
 
-      <p className="mt-8 text-[10px] text-[#4A4A60] leading-relaxed">
+      <p className="mt-8 text-[10px] text-aura-text-dim leading-relaxed">
         Aura is not a lawyer or licensed financial advisor. Document summaries are for
         informational purposes only. For legal advice, consult a professional.
       </p>

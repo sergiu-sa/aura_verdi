@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { NotificationBell } from './notification-bell'
+import { ThemeToggle } from './theme-toggle'
 
 interface NavItem {
   label: string
@@ -98,7 +99,10 @@ export function Sidebar({ userDisplayName, userEmail, userId }: SidebarProps) {
             <AuraLogo />
             <span className="font-display text-xl text-aura-text tracking-tight">Aura</span>
           </div>
-          <NotificationBell userId={userId} align="left" />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <NotificationBell userId={userId} align="left" />
+          </div>
         </div>
       </div>
 
@@ -150,7 +154,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         // Base
         'relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150 group',
         // Inactive
-        !isActive && 'text-aura-text-secondary hover:text-aura-text hover:bg-white/5',
+        !isActive && 'text-aura-text-secondary hover:text-aura-text hover:bg-aura-text/5',
         // Active — teal left bar + muted teal background
         isActive && [
           'text-aura-text bg-aura-primary/10',

@@ -33,21 +33,21 @@ function relativeDate(iso: string): string {
 
 export function ConversationList({ conversations, activeId, onSelect, onNewConversation, onClose }: Props) {
   return (
-    <div className="flex flex-col h-full bg-[#121218] border-r border-[#2C2C3A]">
+    <div className="flex flex-col h-full bg-aura-background border-r border-aura-border">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#2C2C3A]">
-        <h3 className="text-sm font-medium text-[#E8E8EC]">Conversations</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-aura-border">
+        <h3 className="text-sm font-medium text-aura-text">Conversations</h3>
         <div className="flex items-center gap-1">
           <button
             onClick={onNewConversation}
-            className="p-1.5 text-[#8888A0] hover:text-[#0D7377] transition-colors"
+            className="p-1.5 text-aura-text-secondary hover:text-aura-primary transition-colors"
             title="New conversation"
           >
             <Plus size={16} />
           </button>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#8888A0] hover:text-[#E8E8EC] transition-colors md:hidden"
+            className="p-1.5 text-aura-text-secondary hover:text-aura-text transition-colors md:hidden"
           >
             <X size={16} />
           </button>
@@ -57,7 +57,7 @@ export function ConversationList({ conversations, activeId, onSelect, onNewConve
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <p className="px-4 py-6 text-xs text-[#55556A] text-center">
+          <p className="px-4 py-6 text-xs text-aura-text-dim text-center">
             No conversations yet. Start chatting with Aura!
           </p>
         ) : (
@@ -70,14 +70,14 @@ export function ConversationList({ conversations, activeId, onSelect, onNewConve
                   onClick={() => onSelect(conv.id)}
                   className={`w-full text-left px-4 py-3 transition-colors relative ${
                     isActive
-                      ? 'bg-[#0D7377]/10 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-[#0D7377] before:rounded-r'
-                      : 'hover:bg-white/5'
+                      ? 'bg-aura-primary/10 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-aura-primary before:rounded-r'
+                      : 'hover:bg-aura-text/5'
                   }`}
                 >
-                  <p className={`text-sm truncate ${isActive ? 'text-[#E8E8EC]' : 'text-[#C0C0D0]'}`}>
+                  <p className={`text-sm truncate ${isActive ? 'text-aura-text' : 'text-aura-text-secondary'}`}>
                     {conv.preview}
                   </p>
-                  <p className="text-[10px] text-[#55556A] mt-0.5">
+                  <p className="text-[10px] text-aura-text-dim mt-0.5">
                     {relativeDate(conv.lastMessageAt)}
                   </p>
                 </button>

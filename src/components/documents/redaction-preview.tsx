@@ -136,11 +136,11 @@ export function RedactionPreview({
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">
+        <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-1">
           Privacy Shield
         </p>
-        <h3 className="text-sm font-medium text-[#E8E8EC]">Review personal information</h3>
-        <p className="text-xs text-[#8888A0] mt-1 leading-relaxed">
+        <h3 className="text-sm font-medium text-aura-text">Review personal information</h3>
+        <p className="text-xs text-aura-text-secondary mt-1 leading-relaxed">
           {detections.length === 0
             ? 'No personal information was detected. You can proceed directly to analysis.'
             : `${detections.length} item${detections.length !== 1 ? 's' : ''} detected. Highlighted items will be masked before the document is analyzed.`
@@ -150,8 +150,8 @@ export function RedactionPreview({
 
       {/* Extracted text with highlights */}
       {extractedText && (
-        <div className="p-3 rounded-lg bg-[#121218] border border-[#2C2C3A] max-h-48 overflow-y-auto">
-          <p className="text-xs text-[#8888A0] font-mono leading-relaxed whitespace-pre-wrap break-words">
+        <div className="p-3 rounded-lg bg-aura-background border border-aura-border max-h-48 overflow-y-auto">
+          <p className="text-xs text-aura-text-secondary font-mono leading-relaxed whitespace-pre-wrap break-words">
             {segments.map((seg, i) =>
               seg.detection ? (
                 <mark
@@ -172,19 +172,19 @@ export function RedactionPreview({
       {/* Detection list */}
       {detections.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] uppercase tracking-widest text-[#8888A0]">
+          <p className="text-[10px] uppercase tracking-widest text-aura-text-secondary">
             Detected items — uncheck to keep unmasked
           </p>
           {detections.map((det, i) => (
             <label
               key={i}
-              className="flex items-start gap-2.5 p-2 rounded-lg bg-[#121218] border border-[#2C2C3A] cursor-pointer hover:border-[#0D7377]/50 transition-colors"
+              className="flex items-start gap-2.5 p-2 rounded-lg bg-aura-background border border-aura-border cursor-pointer hover:border-aura-primary/50 transition-colors"
             >
               <input
                 type="checkbox"
                 checked={det.confirmed}
                 onChange={() => toggleDetection(i)}
-                className="mt-0.5 accent-[#0D7377] flex-shrink-0"
+                className="mt-0.5 accent-aura-primary flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -193,11 +193,11 @@ export function RedactionPreview({
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-[#8888A0] font-mono truncate max-w-[120px]">
+                  <span className="text-xs text-aura-text-secondary font-mono truncate max-w-[120px]">
                     {det.original.length > 20 ? `${det.original.slice(0, 20)}…` : det.original}
                   </span>
-                  <span className="text-[10px] text-[#4A4A60]">→</span>
-                  <span className="text-xs text-[#0D7377] font-mono">
+                  <span className="text-[10px] text-aura-text-dim">→</span>
+                  <span className="text-xs text-aura-primary font-mono">
                     {det.suggestedMask}
                   </span>
                 </div>
@@ -209,8 +209,8 @@ export function RedactionPreview({
 
       {/* Error */}
       {error && (
-        <div className="p-2.5 rounded-lg bg-[#3B0D0D] border border-[#C75050]/40">
-          <p className="text-xs text-[#F08080]">{error}</p>
+        <div className="p-2.5 rounded-lg bg-aura-danger-muted border border-aura-danger/40">
+          <p className="text-xs text-aura-danger">{error}</p>
         </div>
       )}
 
@@ -218,7 +218,7 @@ export function RedactionPreview({
       <div className="flex items-center justify-between gap-2 pt-1">
         <button
           onClick={onCancel}
-          className="text-xs text-[#8888A0] hover:text-[#E8E8EC]"
+          className="text-xs text-aura-text-secondary hover:text-aura-text"
           disabled={submitting}
         >
           Cancel
@@ -229,7 +229,7 @@ export function RedactionPreview({
             <button
               onClick={() => handleConfirm(true)}
               disabled={submitting}
-              className="text-xs text-[#8888A0] hover:text-[#D4A039] underline disabled:opacity-50"
+              className="text-xs text-aura-text-secondary hover:text-aura-warning underline disabled:opacity-50"
             >
               Skip redaction
             </button>
@@ -238,7 +238,7 @@ export function RedactionPreview({
             size="sm"
             onClick={() => handleConfirm(false)}
             disabled={submitting}
-            className="bg-[#0D7377] hover:bg-[#11999E] text-white text-xs"
+            className="bg-aura-primary hover:bg-aura-primary-light text-white text-xs"
           >
             {submitting
               ? 'Analyzing...'

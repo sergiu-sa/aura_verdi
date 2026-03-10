@@ -49,9 +49,9 @@ function formatDueDate(dueDateStr: string): string {
 }
 
 function urgencyColor(days: number): string {
-  if (days <= 3) return 'text-[#C75050]'
-  if (days <= 7) return 'text-[#D4A039]'
-  return 'text-[#8888A0]'
+  if (days <= 3) return 'text-aura-danger'
+  if (days <= 7) return 'text-aura-warning'
+  return 'text-aura-text-secondary'
 }
 
 function daysLabel(days: number): string {
@@ -102,13 +102,13 @@ function PriorityDropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="p-0.5 rounded text-[#8888A0] hover:text-[#E8E8EC] transition-colors opacity-0 group-hover:opacity-100"
+        className="p-0.5 rounded text-aura-text-secondary hover:text-aura-text transition-colors opacity-0 group-hover:opacity-100"
         title="Change priority"
       >
         <ChevronDown size={12} />
       </button>
       {open && (
-        <div className="absolute right-0 top-6 z-50 bg-[#1C1C28] border border-[#2C2C3A] rounded-lg py-1 shadow-xl min-w-[120px]">
+        <div className="absolute right-0 top-6 z-50 bg-aura-surface border border-aura-border rounded-lg py-1 shadow-xl min-w-[120px]">
           {BILL_PRIORITIES.map((p) => (
             <button
               key={p}
@@ -118,8 +118,8 @@ function PriorityDropdown({
               }}
               className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
                 p === currentPriority
-                  ? 'text-[#E8E8EC] bg-white/5'
-                  : 'text-[#8888A0] hover:text-[#E8E8EC] hover:bg-white/5'
+                  ? 'text-aura-text bg-aura-text/5'
+                  : 'text-aura-text-secondary hover:text-aura-text hover:bg-aura-text/5'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${PRIORITY_META[p].dotClass}`} />
@@ -244,15 +244,15 @@ export function BillCountdown({ bills, onRefresh }: Props) {
           <p className="text-section-header">Upcoming bills</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-1 text-xs text-[#8888A0] hover:text-[#0D7377] transition-colors"
+            className="flex items-center gap-1 text-xs text-aura-text-secondary hover:text-aura-primary transition-colors"
           >
             <Plus size={12} /> Add
           </button>
         </div>
-        <p className="text-[#8888A0] text-sm">
+        <p className="text-aura-text-secondary text-sm">
           No upcoming bills in the next 30 days.
         </p>
-        <p className="text-[#8888A0] text-xs mt-2">
+        <p className="text-aura-text-secondary text-xs mt-2">
           Bills are added automatically when you sync your bank, or add one
           manually.
         </p>
@@ -269,7 +269,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
         <p className="text-section-header">Upcoming bills</p>
         <button
           onClick={() => setShowAddForm((v) => !v)}
-          className="flex items-center gap-1 text-xs text-[#8888A0] hover:text-[#0D7377] transition-colors"
+          className="flex items-center gap-1 text-xs text-aura-text-secondary hover:text-aura-primary transition-colors"
         >
           {showAddForm ? <X size={12} /> : <Plus size={12} />}
           {showAddForm ? 'Cancel' : 'Add'}
@@ -280,7 +280,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
       {showAddForm && (
         <form
           onSubmit={handleAddBill}
-          className="mb-4 p-3 rounded-lg bg-[#121218] border border-[#2C2C3A] space-y-2"
+          className="mb-4 p-3 rounded-lg bg-aura-background border border-aura-border space-y-2"
         >
           <div className="flex gap-2">
             <input
@@ -288,7 +288,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
               placeholder="Bill name"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="flex-1 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377]"
+              className="flex-1 bg-transparent border border-aura-border rounded px-2 py-1.5 text-xs text-aura-text placeholder:text-aura-text-dim focus:outline-none focus:border-aura-primary"
             />
             <input
               type="number"
@@ -297,7 +297,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
               onChange={(e) => setFormAmount(e.target.value)}
               step="0.01"
               min="0"
-              className="w-24 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377]"
+              className="w-24 bg-transparent border border-aura-border rounded px-2 py-1.5 text-xs text-aura-text placeholder:text-aura-text-dim focus:outline-none focus:border-aura-primary"
             />
           </div>
           <div className="flex gap-2 items-center">
@@ -305,12 +305,12 @@ export function BillCountdown({ bills, onRefresh }: Props) {
               type="date"
               value={formDate}
               onChange={(e) => setFormDate(e.target.value)}
-              className="flex-1 bg-transparent border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] focus:outline-none focus:border-[#0D7377]"
+              className="flex-1 bg-transparent border border-aura-border rounded px-2 py-1.5 text-xs text-aura-text focus:outline-none focus:border-aura-primary"
             />
             <select
               value={formPriority}
               onChange={(e) => setFormPriority(e.target.value as BillPriority)}
-              className="bg-[#121218] border border-[#2C2C3A] rounded px-2 py-1.5 text-xs text-[#E8E8EC] focus:outline-none focus:border-[#0D7377]"
+              className="bg-aura-background border border-aura-border rounded px-2 py-1.5 text-xs text-aura-text focus:outline-none focus:border-aura-primary"
             >
               {BILL_PRIORITIES.map((p) => (
                 <option key={p} value={p}>
@@ -321,12 +321,12 @@ export function BillCountdown({ bills, onRefresh }: Props) {
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-1.5 rounded text-xs font-medium bg-[#0D7377] text-white hover:bg-[#0D7377]/80 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 rounded text-xs font-medium bg-aura-primary text-white hover:bg-aura-primary/80 disabled:opacity-50 transition-colors"
             >
               {submitting ? 'Adding...' : 'Add'}
             </button>
           </div>
-          {formError && <p className="text-xs text-[#C75050]">{formError}</p>}
+          {formError && <p className="text-xs text-aura-danger">{formError}</p>}
         </form>
       )}
 
@@ -335,7 +335,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
         <div className="flex items-start justify-between mb-1 group">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-[#E8E8EC] font-medium text-sm">{next.name}</p>
+              <p className="text-aura-text font-medium text-sm">{next.name}</p>
               <PriorityBadge priority={next.priority} />
             </div>
             <p className={`text-xs mt-0.5 ${urgencyColor(nextDays)}`}>
@@ -343,7 +343,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
             </p>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0 ml-4">
-            <p className="text-amount text-[#E8E8EC] text-sm">
+            <p className="text-amount text-aura-text text-sm">
               {formatNOK(next.amount)}
             </p>
             <PriorityDropdown
@@ -353,7 +353,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
             <button
               onClick={() => handleMarkPaid(next.id)}
               disabled={marking === next.id}
-              className="p-1 rounded text-[#8888A0] hover:text-[#2D8B6F] hover:bg-[#2D8B6F]/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+              className="p-1 rounded text-aura-text-secondary hover:text-aura-safe hover:bg-aura-safe/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
               title="Mark as paid"
             >
               <Check size={14} />
@@ -364,7 +364,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
 
       {/* Remaining bills */}
       {rest.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-[#2C2C3A] space-y-2">
+        <div className="mt-4 pt-4 border-t border-aura-border space-y-2">
           {rest.slice(0, 3).map((bill) => {
             const days = daysUntil(bill.due_date)
             return (
@@ -373,7 +373,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
                 className="flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[#E8E8EC] text-xs truncate">
+                  <span className="text-aura-text text-xs truncate">
                     {bill.name}
                   </span>
                   <PriorityBadge priority={bill.priority} />
@@ -384,7 +384,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0 ml-4">
-                  <span className="text-amount text-xs text-[#8888A0]">
+                  <span className="text-amount text-xs text-aura-text-secondary">
                     {formatNOK(bill.amount)}
                   </span>
                   <PriorityDropdown
@@ -394,7 +394,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
                   <button
                     onClick={() => handleMarkPaid(bill.id)}
                     disabled={marking === bill.id}
-                    className="p-0.5 rounded text-[#8888A0] hover:text-[#2D8B6F] hover:bg-[#2D8B6F]/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                    className="p-0.5 rounded text-aura-text-secondary hover:text-aura-safe hover:bg-aura-safe/10 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                     title="Mark as paid"
                   >
                     <Check size={12} />
@@ -404,7 +404,7 @@ export function BillCountdown({ bills, onRefresh }: Props) {
             )
           })}
           {rest.length > 3 && (
-            <p className="text-xs text-[#8888A0] pt-1">
+            <p className="text-xs text-aura-text-secondary pt-1">
               +{rest.length - 3} more bills this month
             </p>
           )}

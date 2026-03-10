@@ -89,16 +89,16 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
   if (initialDocuments.length === 0) {
     return (
       <div>
-        <div className="p-8 rounded-xl bg-[#1C1C28] border border-[#2C2C3A] border-dashed text-center mb-6">
+        <div className="p-8 rounded-xl bg-aura-surface border border-aura-border border-dashed text-center mb-6">
           <p className="text-3xl mb-3">🛡️</p>
-          <p className="text-[#E8E8EC] text-sm font-medium mb-2">No documents yet</p>
-          <p className="text-[#8888A0] text-xs leading-relaxed max-w-xs mx-auto mb-5">
+          <p className="text-aura-text text-sm font-medium mb-2">No documents yet</p>
+          <p className="text-aura-text-secondary text-xs leading-relaxed max-w-xs mx-auto mb-5">
             Upload contracts, letters, invoices, or tax documents. Aura scans for
             personal information first — you review what gets masked before any AI analysis.
           </p>
           <Button
             onClick={() => setShowUploadDialog(true)}
-            className="bg-[#0D7377] hover:bg-[#11999E] text-white text-sm"
+            className="bg-aura-primary hover:bg-aura-primary-light text-white text-sm"
           >
             Upload your first document
           </Button>
@@ -119,13 +119,13 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
       {/* Toolbar — search, filter, upload */}
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#55556A]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-aura-text-dim" />
           <input
             type="text"
             placeholder="Search documents..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#1C1C28] border border-[#2C2C3A] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E8E8EC] placeholder:text-[#55556A] focus:outline-none focus:border-[#0D7377] transition-colors"
+            className="w-full bg-aura-surface border border-aura-border rounded-lg pl-9 pr-3 py-2 text-xs text-aura-text placeholder:text-aura-text-dim focus:outline-none focus:border-aura-primary transition-colors"
           />
         </div>
         <div className="flex gap-2">
@@ -133,7 +133,7 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="bg-[#1C1C28] border border-[#2C2C3A] rounded-lg px-3 py-2 text-xs text-[#E8E8EC] focus:outline-none focus:border-[#0D7377] transition-colors"
+              className="bg-aura-surface border border-aura-border rounded-lg px-3 py-2 text-xs text-aura-text focus:outline-none focus:border-aura-primary transition-colors"
             >
               <option value="all">All types</option>
               {documentTypes.map((type) => (
@@ -146,7 +146,7 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
           <Button
             onClick={() => setShowUploadDialog(true)}
             size="sm"
-            className="bg-[#0D7377] hover:bg-[#11999E] text-white text-xs"
+            className="bg-aura-primary hover:bg-aura-primary-light text-white text-xs"
           >
             + Upload
           </Button>
@@ -154,7 +154,7 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
       </div>
 
       {/* Count */}
-      <p className="text-xs text-[#8888A0] mb-3">
+      <p className="text-xs text-aura-text-secondary mb-3">
         {filteredDocs.length === initialDocuments.length
           ? `${initialDocuments.length} document${initialDocuments.length !== 1 ? 's' : ''}`
           : `${filteredDocs.length} of ${initialDocuments.length} documents`}
@@ -162,7 +162,7 @@ export function DocumentList({ initialDocuments, linkedDocIds = [] }: Props) {
 
       {/* Document list */}
       {filteredDocs.length === 0 ? (
-        <p className="text-sm text-[#8888A0] text-center py-8">
+        <p className="text-sm text-aura-text-secondary text-center py-8">
           No documents match your search.
         </p>
       ) : (

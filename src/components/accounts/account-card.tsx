@@ -54,8 +54,8 @@ export function AccountCard({
 }: Props) {
   const [expanded, setExpanded] = useState(false)
 
-  const balanceColor = balance >= 0 ? 'text-[#4DD9A0]' : 'text-[#C75050]'
-  const changeColor = netChange30d > 0 ? 'text-[#4DD9A0]' : netChange30d < 0 ? 'text-[#C75050]' : 'text-[#8888A0]'
+  const balanceColor = balance >= 0 ? 'text-aura-positive' : 'text-aura-danger'
+  const changeColor = netChange30d > 0 ? 'text-aura-positive' : netChange30d < 0 ? 'text-aura-danger' : 'text-aura-text-secondary'
 
   return (
     <div className="surface rounded-xl overflow-hidden">
@@ -67,11 +67,11 @@ export function AccountCard({
         {/* Left side: account info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-[#E8E8EC] text-sm font-medium truncate">
+            <p className="text-aura-text text-sm font-medium truncate">
               {accountName || 'Unnamed account'}
             </p>
             {isSharedWithPartner && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#0D7377]/20 text-[#11999E] text-[10px] font-medium shrink-0">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-aura-primary/20 text-aura-primary-light text-[10px] font-medium shrink-0">
                 <Users size={10} />
                 Shared
               </span>
@@ -79,24 +79,24 @@ export function AccountCard({
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {bankName && (
-              <span className="text-xs text-[#8888A0]">{bankName}</span>
+              <span className="text-xs text-aura-text-secondary">{bankName}</span>
             )}
             {accountType && (
               <>
-                <span className="text-[#2C2C3A]">·</span>
-                <span className="text-xs text-[#8888A0] capitalize">{accountType}</span>
+                <span className="text-aura-border">·</span>
+                <span className="text-xs text-aura-text-secondary capitalize">{accountType}</span>
               </>
             )}
             {bankStatus === 'active' && (
               <>
-                <span className="text-[#2C2C3A]">·</span>
-                <span className="text-xs text-[#2D8B6F]">Connected</span>
+                <span className="text-aura-border">·</span>
+                <span className="text-xs text-aura-safe">Connected</span>
               </>
             )}
             {bankStatus === 'expired' && (
               <>
-                <span className="text-[#2C2C3A]">·</span>
-                <span className="text-xs text-[#D4A039]">Expired</span>
+                <span className="text-aura-border">·</span>
+                <span className="text-xs text-aura-warning">Expired</span>
               </>
             )}
           </div>
@@ -117,7 +117,7 @@ export function AccountCard({
           <ChevronDown
             size={16}
             className={cn(
-              'text-[#55556A] transition-transform duration-200',
+              'text-aura-text-dim transition-transform duration-200',
               expanded && 'rotate-180'
             )}
           />
@@ -132,12 +132,12 @@ export function AccountCard({
         )}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-[#2C2C3A] px-4 pb-4 pt-3">
+          <div className="border-t border-aura-border px-4 pb-4 pt-3">
             {/* Last synced */}
             {lastSyncedAt && (
               <div className="flex items-center gap-1.5 mb-3">
-                <RefreshCw size={10} className="text-[#55556A]" />
-                <p className="text-[10px] text-[#55556A]">
+                <RefreshCw size={10} className="text-aura-text-dim" />
+                <p className="text-[10px] text-aura-text-dim">
                   Last synced: {new Date(lastSyncedAt).toLocaleDateString('nb-NO', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit',
@@ -147,19 +147,19 @@ export function AccountCard({
             )}
 
             {/* Recent transactions */}
-            <p className="text-[10px] text-[#55556A] uppercase tracking-wider mb-2">
+            <p className="text-[10px] text-aura-text-dim uppercase tracking-wider mb-2">
               Recent transactions
             </p>
 
             {recentTransactions.length === 0 ? (
-              <p className="text-xs text-[#8888A0] py-3">
+              <p className="text-xs text-aura-text-secondary py-3">
                 No recent transactions for this account.
               </p>
             ) : (
               <div className="space-y-1">
                 {recentTransactions.map((tx) => {
                   const amount = tx.amount
-                  const amountColor = amount >= 0 ? 'text-[#4DD9A0]' : 'text-[#E8E8EC]'
+                  const amountColor = amount >= 0 ? 'text-aura-positive' : 'text-aura-text'
 
                   return (
                     <div
@@ -173,15 +173,15 @@ export function AccountCard({
 
                       {/* Description + date */}
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-[#E8E8EC] truncate">
+                        <p className="text-xs text-aura-text truncate">
                           {tx.counterpart_name || tx.description || 'Unknown'}
                         </p>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[#55556A]">
+                          <span className="text-[10px] text-aura-text-dim">
                             {formatDate(tx.transaction_date)}
                           </span>
                           {tx.is_recurring && (
-                            <span className="text-[9px] text-[#0D7377] bg-[#0D7377]/10 px-1 py-0.5 rounded">
+                            <span className="text-[9px] text-aura-primary bg-aura-primary/10 px-1 py-0.5 rounded">
                               Recurring
                             </span>
                           )}
@@ -201,7 +201,7 @@ export function AccountCard({
             {recentTransactions.length > 0 && (
               <a
                 href="/transactions"
-                className="block text-center text-xs text-[#0D7377] hover:text-[#11999E] mt-3 py-1 transition-colors"
+                className="block text-center text-xs text-aura-primary hover:text-aura-primary-light mt-3 py-1 transition-colors"
               >
                 View all transactions →
               </a>

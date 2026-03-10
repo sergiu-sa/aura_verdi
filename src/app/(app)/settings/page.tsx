@@ -5,6 +5,7 @@ import { ProfileSection } from '@/components/settings/profile-section'
 import { NotificationSection } from '@/components/settings/notification-section'
 import { BankConnectionSection } from '@/components/settings/bank-connection-section'
 import { PartnerSection } from '@/components/settings/partner-section'
+import { AppearanceSection } from '@/components/settings/appearance-section'
 import type { NotificationPreferences } from '@/types/database'
 
 export const metadata: Metadata = { title: 'Settings' }
@@ -55,6 +56,9 @@ export default async function SettingsPage({ searchParams }: Props) {
       {/* Page header */}
       <p className="text-section-header mb-2">Preferences</p>
       <h1 className="font-display text-4xl text-aura-text mb-8">Settings</h1>
+
+      {/* ── Appearance ────────────────────────────────────────────────── */}
+      <AppearanceSection />
 
       {/* ── Profile Section ──────────────────────────────────────────── */}
       <ProfileSection displayName={displayName} email={user.email ?? ''} />

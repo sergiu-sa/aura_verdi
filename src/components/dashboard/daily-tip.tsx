@@ -89,24 +89,24 @@ export function DailyTip(props: Props) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <p className="text-section-header mb-2">Aura says</p>
-          <p className="text-[#E8E8EC] text-sm leading-relaxed">{tip}</p>
+          <p className="text-aura-text text-sm leading-relaxed">{tip}</p>
         </div>
         {/* Subtle Aura identity mark */}
-        <div className="w-8 h-8 rounded-full bg-[#0D7377]/20 border border-[#0D7377]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-[#0D7377] text-xs font-display">A</span>
+        <div className="w-8 h-8 rounded-full bg-aura-primary/20 border border-aura-primary/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-aura-primary text-xs font-display">A</span>
         </div>
       </div>
 
       {/* Last synced + chat prompt */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2C2C3A]">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-aura-border">
         {syncedText && hasBank ? (
-          <p className="text-[#8888A0] text-xs">{syncedText}</p>
+          <p className="text-aura-text-secondary text-xs">{syncedText}</p>
         ) : (
           <span />
         )}
         <a
           href="/chat"
-          className="text-xs text-[#0D7377] hover:text-[#11999E] transition-colors"
+          className="text-xs text-aura-primary hover:text-aura-primary-light transition-colors"
         >
           Open chat →
         </a>

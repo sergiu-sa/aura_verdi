@@ -43,8 +43,8 @@ export function NotificationBell({ userId, align = 'right' }: Props) {
         className={cn(
           'relative flex items-center justify-center w-8 h-8 rounded-md transition-colors',
           open
-            ? 'text-aura-text bg-white/10'
-            : 'text-aura-text-dim hover:text-aura-text hover:bg-white/5'
+            ? 'text-aura-text bg-aura-text/10'
+            : 'text-aura-text-dim hover:text-aura-text hover:bg-aura-text/5'
         )}
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
       >
@@ -60,11 +60,11 @@ export function NotificationBell({ userId, align = 'right' }: Props) {
       {/* Dropdown panel */}
       {open && (
         <div className={cn(
-          'absolute top-full mt-2 w-80 rounded-xl border border-[#2C2C3A] bg-[#1C1C28] shadow-xl z-50 overflow-hidden',
+          'absolute top-full mt-2 w-80 rounded-xl border border-aura-border bg-aura-surface shadow-xl z-50 overflow-hidden',
           align === 'right' ? 'right-0' : 'left-0'
         )}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2C2C3A]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-aura-border">
             <p className="text-sm font-medium text-aura-text">Notifications</p>
             {unreadCount > 0 && (
               <button
@@ -82,7 +82,7 @@ export function NotificationBell({ userId, align = 'right' }: Props) {
               <div className="px-4 py-8 text-center">
                 <p className="text-2xl mb-2">🔔</p>
                 <p className="text-sm text-aura-text-secondary">No new notifications</p>
-                <p className="text-xs text-[#4A4A60] mt-1">You&apos;re all caught up</p>
+                <p className="text-xs text-aura-text-dim mt-1">You&apos;re all caught up</p>
               </div>
             ) : (
               notifications.map((notif) => (
@@ -118,11 +118,11 @@ function NotificationItem({
   const urgencyDot = {
     critical: 'bg-aura-danger',
     info: 'bg-aura-primary',
-    background: 'bg-[#4A4A60]',
-  }[notification.urgency] ?? 'bg-[#4A4A60]'
+    background: 'bg-aura-text-dim',
+  }[notification.urgency] ?? 'bg-aura-text-dim'
 
   return (
-    <div className="flex gap-3 px-4 py-3 border-b border-[#2C2C3A] last:border-0 hover:bg-white/[0.03] transition-colors">
+    <div className="flex gap-3 px-4 py-3 border-b border-aura-border last:border-0 hover:bg-white/[0.03] transition-colors">
       {/* Urgency dot */}
       <div className="pt-1.5 shrink-0">
         <div className={cn('w-1.5 h-1.5 rounded-full', urgencyDot)} />
@@ -132,7 +132,7 @@ function NotificationItem({
       <div className="flex-1 min-w-0">
         <p className={cn('text-xs font-medium mb-0.5', urgencyColor)}>{notification.title}</p>
         <p className="text-xs text-aura-text-secondary leading-relaxed">{notification.message}</p>
-        <p className="text-[10px] text-[#4A4A60] mt-1">
+        <p className="text-[10px] text-aura-text-dim mt-1">
           {formatRelativeTime(notification.created_at)}
         </p>
       </div>
@@ -140,7 +140,7 @@ function NotificationItem({
       {/* Dismiss button */}
       <button
         onClick={onRead}
-        className="shrink-0 text-[#4A4A60] hover:text-aura-text-secondary transition-colors text-xs leading-none pt-0.5"
+        className="shrink-0 text-aura-text-dim hover:text-aura-text-secondary transition-colors text-xs leading-none pt-0.5"
         aria-label="Dismiss notification"
       >
         ✕

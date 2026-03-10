@@ -47,29 +47,33 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        // ── Aura-specific semantic palette ──────────────────────────────
+        // ── Aura-specific semantic palette (CSS variable driven) ─────────
+        // Values defined in globals.css for both light and dark modes.
         aura: {
           // Identity
-          primary: "#0D7377",        // Deep teal — Aura's signature
-          "primary-light": "#11999E", // Lighter teal for hover states
+          primary: "hsl(var(--aura-primary) / <alpha-value>)",
+          "primary-light": "hsl(var(--aura-primary-light) / <alpha-value>)",
           // Backgrounds
-          background: "#121218",     // Near-black — default dark bg
-          surface: "#1C1C28",        // Elevated card surface
-          "surface-high": "#24243A", // Higher elevation (dialogs, dropdowns)
+          background: "hsl(var(--aura-bg) / <alpha-value>)",
+          surface: "hsl(var(--aura-surface) / <alpha-value>)",
+          "surface-high": "hsl(var(--aura-surface-high) / <alpha-value>)",
           // Semantic states
-          safe: "#2D8B6F",           // Positive / green / money is safe
-          "safe-muted": "#1E5C49",   // Muted safe background
-          warning: "#D4A039",        // Caution / amber
-          "warning-muted": "#5C3D0A",
-          danger: "#C75050",         // Urgent / red
-          "danger-muted": "#4A1414",
+          safe: "hsl(var(--aura-safe) / <alpha-value>)",
+          "safe-muted": "hsl(var(--aura-safe-muted) / <alpha-value>)",
+          warning: "hsl(var(--aura-warning) / <alpha-value>)",
+          "warning-muted": "hsl(var(--aura-warning-muted) / <alpha-value>)",
+          danger: "hsl(var(--aura-danger) / <alpha-value>)",
+          "danger-muted": "hsl(var(--aura-danger-muted) / <alpha-value>)",
+          positive: "hsl(var(--aura-positive) / <alpha-value>)",
           // Text
-          text: "#E8E8EC",           // Primary text (off-white)
-          "text-secondary": "#8888A0", // Secondary / muted text
-          "text-dim": "#55556A",     // Dimmed / disabled text
+          text: "hsl(var(--aura-text) / <alpha-value>)",
+          "text-secondary": "hsl(var(--aura-text-secondary) / <alpha-value>)",
+          "text-dim": "hsl(var(--aura-text-dim) / <alpha-value>)",
           // Borders
-          border: "#2A2A3E",         // Default border
-          "border-subtle": "#1E1E2E", // Very subtle border
+          border: "hsl(var(--aura-border) / <alpha-value>)",
+          "border-subtle": "hsl(var(--aura-border-subtle) / <alpha-value>)",
+          // Input
+          input: "hsl(var(--aura-input) / <alpha-value>)",
         },
       },
       // ── Aura Typography ───────────────────────────────────────────────

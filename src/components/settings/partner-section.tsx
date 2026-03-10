@@ -171,12 +171,12 @@ export function PartnerSection({ userId }: Props) {
 
   return (
     <section className="mb-10">
-      <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-1">Partner</p>
-      <h2 className="font-display text-2xl text-[#E8E8EC] mb-4">Shared Economy</h2>
+      <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-1">Partner</p>
+      <h2 className="font-display text-2xl text-aura-text mb-4">Shared Economy</h2>
 
       {loading ? (
-        <div className="p-6 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
-          <p className="text-sm text-[#8888A0]">Loading…</p>
+        <div className="p-6 rounded-xl bg-aura-surface border border-aura-border">
+          <p className="text-sm text-aura-text-secondary">Loading…</p>
         </div>
       ) : status?.state === 'none' ? (
         <StateNone
@@ -229,8 +229,8 @@ function StateNone({
   onSubmit: (e: React.FormEvent) => void
 }) {
   return (
-    <div className="p-6 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
-      <p className="text-sm text-[#8888A0] leading-relaxed mb-5">
+    <div className="p-6 rounded-xl bg-aura-surface border border-aura-border">
+      <p className="text-sm text-aura-text-secondary leading-relaxed mb-5">
         Link accounts with your partner to get a combined financial overview.
         Both of you need an Aura account. You choose which accounts to share — everything
         else stays private.
@@ -242,18 +242,18 @@ function StateNone({
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
           required
-          className="flex-1 bg-[#121218] border-[#2C2C3A] text-[#E8E8EC] placeholder:text-[#4A4A60]"
+          className="flex-1 bg-aura-background border-aura-border text-aura-text placeholder:text-aura-text-dim"
         />
         <Button
           type="submit"
           disabled={inviting || !inviteEmail}
-          className="bg-[#0D7377] hover:bg-[#11999E] text-white shrink-0"
+          className="bg-aura-primary hover:bg-aura-primary-light text-white shrink-0"
         >
           {inviting ? 'Sending…' : 'Send invite'}
         </Button>
       </form>
       {inviteError && (
-        <p className="mt-3 text-sm text-[#C75050]">{inviteError}</p>
+        <p className="mt-3 text-sm text-aura-danger">{inviteError}</p>
       )}
     </div>
   )
@@ -268,13 +268,13 @@ function StateSent({
   onCancel: () => void
 }) {
   return (
-    <div className="p-6 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
+    <div className="p-6 rounded-xl bg-aura-surface border border-aura-border">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-[#E8E8EC] mb-1">
+          <p className="text-sm font-medium text-aura-text mb-1">
             Invite sent to {partnerName}
           </p>
-          <p className="text-sm text-[#8888A0]">
+          <p className="text-sm text-aura-text-secondary">
             Waiting for them to accept in their Aura Settings.
           </p>
         </div>
@@ -283,12 +283,12 @@ function StateSent({
           size="sm"
           onClick={onCancel}
           disabled={actionLoading}
-          className="text-[#8888A0] hover:text-[#C75050] shrink-0"
+          className="text-aura-text-secondary hover:text-aura-danger shrink-0"
         >
           {actionLoading ? 'Cancelling…' : 'Cancel invite'}
         </Button>
       </div>
-      {actionError && <p className="mt-3 text-sm text-[#C75050]">{actionError}</p>}
+      {actionError && <p className="mt-3 text-sm text-aura-danger">{actionError}</p>}
     </div>
   )
 }
@@ -303,11 +303,11 @@ function StateReceived({
   onDecline: () => void
 }) {
   return (
-    <div className="p-6 rounded-xl bg-[#1C1C28] border border-[#0D7377]/40">
-      <p className="text-sm font-medium text-[#E8E8EC] mb-1">
+    <div className="p-6 rounded-xl bg-aura-surface border border-aura-primary/40">
+      <p className="text-sm font-medium text-aura-text mb-1">
         {partnerName} has invited you to link accounts
       </p>
-      <p className="text-sm text-[#8888A0] mb-5 leading-relaxed">
+      <p className="text-sm text-aura-text-secondary mb-5 leading-relaxed">
         Accepting links your Aura accounts. You both control what you share —
         nothing is visible until you explicitly choose to share it.
       </p>
@@ -315,7 +315,7 @@ function StateReceived({
         <Button
           onClick={onAccept}
           disabled={actionLoading}
-          className="bg-[#0D7377] hover:bg-[#11999E] text-white"
+          className="bg-aura-primary hover:bg-aura-primary-light text-white"
         >
           {actionLoading ? 'Accepting…' : 'Accept'}
         </Button>
@@ -323,12 +323,12 @@ function StateReceived({
           variant="ghost"
           onClick={onDecline}
           disabled={actionLoading}
-          className="text-[#8888A0] hover:text-[#C75050]"
+          className="text-aura-text-secondary hover:text-aura-danger"
         >
           Decline
         </Button>
       </div>
-      {actionError && <p className="mt-3 text-sm text-[#C75050]">{actionError}</p>}
+      {actionError && <p className="mt-3 text-sm text-aura-danger">{actionError}</p>}
     </div>
   )
 }
@@ -349,10 +349,10 @@ function StateLinked({
   return (
     <div className="space-y-4">
       {/* Linked status */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-aura-surface border border-aura-border">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#2D8B6F]" />
-          <p className="text-sm text-[#E8E8EC]">
+          <div className="w-2 h-2 rounded-full bg-aura-safe" />
+          <p className="text-sm text-aura-text">
             Linked with <span className="font-medium">{partnerName}</span>
           </p>
         </div>
@@ -361,23 +361,23 @@ function StateLinked({
           size="sm"
           onClick={onUnlink}
           disabled={actionLoading}
-          className="text-[#8888A0] hover:text-[#C75050] text-xs"
+          className="text-aura-text-secondary hover:text-aura-danger text-xs"
         >
           {actionLoading ? 'Unlinking…' : 'Unlink'}
         </Button>
       </div>
 
       {actionError && (
-        <p className="text-sm text-[#C75050] px-1">{actionError}</p>
+        <p className="text-sm text-aura-danger px-1">{actionError}</p>
       )}
 
       {/* My accounts — sharing toggles */}
-      <div className="p-5 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
-        <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-3">
+      <div className="p-5 rounded-xl bg-aura-surface border border-aura-border">
+        <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-3">
           Your accounts — choose what to share
         </p>
         {myAccounts.length === 0 ? (
-          <p className="text-sm text-[#8888A0]">No accounts connected yet.</p>
+          <p className="text-sm text-aura-text-secondary">No accounts connected yet.</p>
         ) : (
           <div className="space-y-2">
             {myAccounts.map((account) => (
@@ -386,9 +386,9 @@ function StateLinked({
                 className="flex items-center justify-between py-2"
               >
                 <div>
-                  <p className="text-sm text-[#E8E8EC]">{account.account_name ?? 'Account'}</p>
+                  <p className="text-sm text-aura-text">{account.account_name ?? 'Account'}</p>
                   {account.account_type && (
-                    <p className="text-xs text-[#8888A0] capitalize">{account.account_type}</p>
+                    <p className="text-xs text-aura-text-secondary capitalize">{account.account_type}</p>
                   )}
                 </div>
                 <button
@@ -396,7 +396,7 @@ function StateLinked({
                   disabled={togglingId === account.id}
                   className={cn(
                     'relative w-10 h-5 rounded-full transition-colors duration-200 shrink-0',
-                    account.is_shared_with_partner ? 'bg-[#0D7377]' : 'bg-[#2C2C3A]',
+                    account.is_shared_with_partner ? 'bg-aura-primary' : 'bg-aura-border',
                     togglingId === account.id && 'opacity-50 cursor-not-allowed'
                   )}
                   aria-label={`${account.is_shared_with_partner ? 'Stop sharing' : 'Share'} ${account.account_name}`}
@@ -416,20 +416,20 @@ function StateLinked({
 
       {/* Partner's shared accounts — read only */}
       {partnerAccounts.length > 0 && (
-        <div className="p-5 rounded-xl bg-[#1C1C28] border border-[#2C2C3A]">
-          <p className="text-xs uppercase tracking-widest text-[#8888A0] mb-3">
+        <div className="p-5 rounded-xl bg-aura-surface border border-aura-border">
+          <p className="text-xs uppercase tracking-widest text-aura-text-secondary mb-3">
             {partnerName}&apos;s shared accounts
           </p>
           <div className="space-y-2">
             {partnerAccounts.map((account) => (
               <div key={account.id} className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm text-[#E8E8EC]">{account.account_name ?? 'Account'}</p>
+                  <p className="text-sm text-aura-text">{account.account_name ?? 'Account'}</p>
                   {account.account_type && (
-                    <p className="text-xs text-[#8888A0] capitalize">{account.account_type}</p>
+                    <p className="text-xs text-aura-text-secondary capitalize">{account.account_type}</p>
                   )}
                 </div>
-                <span className="text-xs text-[#0D7377]">Shared</span>
+                <span className="text-xs text-aura-primary">Shared</span>
               </div>
             ))}
           </div>

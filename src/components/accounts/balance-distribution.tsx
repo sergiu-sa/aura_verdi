@@ -163,7 +163,7 @@ export function BalanceDistribution({ accounts }: Props) {
       className="surface p-4 rounded-xl mb-4"
       onMouseMove={handleMouseMove}
     >
-      <p className="text-[10px] text-[#55556A] uppercase tracking-wider mb-3">
+      <p className="text-[10px] text-aura-text-dim uppercase tracking-wider mb-3">
         Balance distribution
       </p>
 
@@ -187,7 +187,7 @@ export function BalanceDistribution({ accounts }: Props) {
 
         {/* Center divider */}
         {negativeSegments.length > 0 && positiveSegments.length > 0 && (
-          <div className="w-px bg-[#2C2C3A] shrink-0" />
+          <div className="w-px bg-aura-border shrink-0" />
         )}
 
         {/* Positive half (extends right) */}
@@ -212,7 +212,7 @@ export function BalanceDistribution({ accounts }: Props) {
         {allSegments.slice(0, 6).map((seg) => (
           <div
             key={seg.id}
-            className="flex items-center gap-1.5 text-xs text-[#8888A0]"
+            className="flex items-center gap-1.5 text-xs text-aura-text-secondary"
             onMouseEnter={() => setHoveredId(seg.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
@@ -224,7 +224,7 @@ export function BalanceDistribution({ accounts }: Props) {
           </div>
         ))}
         {allSegments.length > 6 && (
-          <span className="text-xs text-[#55556A]">
+          <span className="text-xs text-aura-text-dim">
             +{allSegments.length - 6} more
           </span>
         )}
@@ -233,20 +233,20 @@ export function BalanceDistribution({ accounts }: Props) {
       {/* Tooltip (hidden on touch devices — legend provides the fallback) */}
       {hoveredSegment && (
         <div
-          className="fixed z-50 pointer-events-none bg-[#1C1C28] border border-[#2C2C3A] rounded-lg px-3 py-2 shadow-xl hidden md:block"
+          className="fixed z-50 pointer-events-none bg-aura-surface border border-aura-border rounded-lg px-3 py-2 shadow-xl hidden md:block"
           style={{ left: tooltipPos.x, top: tooltipPos.y }}
         >
-          <p className="text-[#E8E8EC] text-sm font-medium">
+          <p className="text-aura-text text-sm font-medium">
             {hoveredSegment.account_name}
           </p>
           <p
             className={`text-sm tabular-nums ${
-              hoveredSegment.balance >= 0 ? 'text-[#4DD9A0]' : 'text-[#C75050]'
+              hoveredSegment.balance >= 0 ? 'text-aura-positive' : 'text-aura-danger'
             }`}
           >
             {formatNOK(hoveredSegment.balance)}
           </p>
-          <p className="text-[#8888A0] text-xs">
+          <p className="text-aura-text-secondary text-xs">
             {hoveredSegment.pctOfBar.toFixed(1)}% of total
           </p>
         </div>

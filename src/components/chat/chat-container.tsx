@@ -191,7 +191,7 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
               {conversations.length > 0 && (
                 <button
                   onClick={() => setShowHistory((v) => !v)}
-                  className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-aura-text-secondary hover:text-aura-text transition-colors"
                 >
                   <History size={12} />
                   History
@@ -201,7 +201,7 @@ export function ChatContainer({ conversations = [], initialConversationId, initi
                 <button
                   onClick={handleNewConversation}
                   disabled={isStreaming}
-                  className="flex items-center gap-1.5 text-xs text-[#8888A0] hover:text-[#E8E8EC] transition-colors disabled:opacity-50 ml-auto"
+                  className="flex items-center gap-1.5 text-xs text-aura-text-secondary hover:text-aura-text transition-colors disabled:opacity-50 ml-auto"
                 >
                   <RotateCcw size={12} />
                   New conversation
